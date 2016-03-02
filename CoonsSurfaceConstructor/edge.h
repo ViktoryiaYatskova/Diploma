@@ -1,25 +1,25 @@
 #ifndef EDGE_H
 #define EDGE_H
 
-#include "point2d.h"
-#include "exMath.h"
-#include "vector.h"
+#include <QPointF>
 
 class Edge {
 
 private:
-    Point2D point1;
-    Point2D point2;
+    QPointF point1;
+    QPointF point2;
 
 public:
     static int dimension;
 
-    Edge(const Point2D&, const Point2D&);
     Edge();
+    Edge(const QPointF &p1, const QPointF &p2);
 
-    bool isCrossedByEdge(Edge& edge);
-    bool isCrossedBySomeEdge(Vector <Edge>& edges);
-    static Vector <Edge>& createAllPossibleEdgesThatNotCrossOthers(Vector < Point2D > &points, Vector <Edge> &edgesNotToCross);
+    QPointF getStartPoint() const;
+    void setStartPoint(const QPointF &value);
+
+    QPointF getEndPoint() const;
+    void setEndPoint(const QPointF &value);
 };
 
 #endif // EDGE_H

@@ -1,31 +1,23 @@
 #include "triangularunit.h"
 
 TriangularUnit::
-    ~TriangularUnit(){
-
-    delete[] neiborTriangulars;
-    delete[] vertexes;
-    delete[] edges;
-}
-
-TriangularUnit::
     TriangularUnit() {
 
     //create empty triangular
-    vertexes = new Point2D[3];
-    edges = new Edges[3];
+    vertexes = new QPointF[3];
+    edges = new Edge[3];
     isEmpty = true;
 }
 
 TriangularUnit::
-    TriangularUnit(Point2D* trVertexes) {
+    TriangularUnit(QPointF* trVertexes) {
 
-    neiborTriangulars = new TriangularUnit[3];
+    neighborTriangulars = new TriangularUnit[3];
     vertexes = trVertexes;
 
-    edges = new Edges[3];
+    edges = new Edge[3];
     for (int i = 0; i < 3; i++) {
-        edges[i] = new Edge(trVertexes[i], trVertexes[(i + 1) % 3]);
+        edges[i] = Edge(trVertexes[i], trVertexes[(i + 1) % 3]);
     }
 
     /*for (int i = 0; i < 3; i++) {
@@ -36,16 +28,16 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(Point2D& p1, Point2D& p2, Point2D& p3) {
+    TriangularUnit(QPointF& p1, QPointF& p2, QPointF& p3) {
 
-    neiborTriangulars = new TriangularUnit[3];
+    neighborTriangulars = new TriangularUnit[3];
     vertexes[0] = p1;
     vertexes[1] = p2;
     vertexes[2] = p3;
 
-    edges = new Edges[3];
+    edges = new Edge[3];
     for (int i = 0; i < 3; i++) {
-        edges[i] = new Edge(vertexes[i], vertexes[(i + 1) % 3]);
+        edges[i] = Edge(vertexes[i], vertexes[(i + 1) % 3]);
     }
 
     /*for (int i = 0; i < 3; i++) {
@@ -56,14 +48,14 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(Point2D* trVertexes, TriangularUnit* triangulars) {
+    TriangularUnit(QPointF* trVertexes, TriangularUnit* triangulars) {
 
     neighborTriangulars = triangulars;
     vertexes = trVertexes;
 
-    edges = new Edges[3];
+    edges = new Edge[3];
     for (int i = 0; i < 3; i++) {
-        edges[i] = new Edge(trVertexes[i], trVertexes[(i + 1) % 3]);
+        edges[i] = Edge(trVertexes[i], trVertexes[(i + 1) % 3]);
     }
 
     /*for (int i = 0; i < 3; i++) {
@@ -84,4 +76,12 @@ Edge* TriangularUnit::
 
     return edges;
 }
+
+/*TriangularUnit::
+    ~TriangularUnit() {
+
+    delete[] neiborTriangulars;
+    delete[] vertexes;
+    delete[] edges;
+}*/
 

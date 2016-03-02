@@ -12,23 +12,23 @@ TARGET = CoonsSurfaceConstructor
 TEMPLATE = app
 
 
-SOURCES += main.cpp\
-           mainwindow.cpp \
-    delaunaytriangulation.cpp \
-    createscene.cpp \
-    triangularunit.cpp \
-    edge.cpp \
-    vector.cpp \
-    point2d.cpp \
-    exMath.cpp
+SOURCES +=  main.cpp\
+            mainwindow.cpp \
+            delaunaytriangulation.cpp \
+            createscene.cpp \
+            triangularunit.cpp \
+            edge.cpp \
+            exMath.cpp \
+            grahamScan.cpp \
+            qroundlist.cpp
 
 HEADERS  += mainwindow.h \
-    delaunaytriangulation.h \
-    createscene.h \
-    triangularunit.h \
-    edge.h \
-    vector.h \
-    point2d.h \
-    exMath.h
+            delaunaytriangulation.h \
+            createscene.h \
+            triangularunit.h \
+            edge.h \
+            exMath.h \
+            grahamScan.h \
+            qroundlist.h
 
 FORMS    += mainwindow.ui

@@ -2,12 +2,12 @@
 #define TRIANGULARUNIT_H
 
 #include "edge.h"
-#include "point2d.h"
+#include <QPointF>
 
 class TriangularUnit {
 
 private:
-    Point2D* vertexes;
+    QPointF* vertexes;
     Edge* edges;
     TriangularUnit* neighborTriangulars;
     bool isEmpty;
@@ -15,13 +15,13 @@ private:
 public:
     TriangularUnit();
 
-    ~TriangularUnit();
+    //~TriangularUnit();
 
-    TriangularUnit(Point2D* trVertexes);
+    TriangularUnit(QPointF*);
 
-    TriangularUnit(Point2D&, Point2D&, Point2D&);
+    TriangularUnit(QPointF&, QPointF&, QPointF&);
 
-    TriangularUnit(Point2D* trVertexes, TriangularUnit* triangulars);
+    TriangularUnit(QPointF*, TriangularUnit*);
 
     bool getIsEmpty();
     Edge* getEdges();
