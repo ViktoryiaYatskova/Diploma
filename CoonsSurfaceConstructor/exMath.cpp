@@ -1,12 +1,84 @@
 #include "exMath.h"
 
+void ExMath::consoleLog(const char* error) {
+    std::cout<<error<<std::endl;
+}
+
+void ExMath::consoleLog(int error) {
+    std::cout<<error<<std::endl;
+}
+
 ExMath::ExMath() {}
+
+//const double ExMath::PRECISION = 0.00001;
+
+bool ExMath::isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
+    return ((point.x() - lineB.x()) * (lineA.y() - lineB.y()) - (point.y() - lineB.y()) * (lineA.x() - lineB.x())) < PRECISION ;
+}
+
+double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
+
+double ExMath::distantBeetweenPoints(const QPointF p1, const QPointF p2) {
+    return sqrt(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2));
+}
+
+int ExMath::pointPositionToLine(QPointF point, QPointF linePoint1, QPointF linePoint2) {
+    double ax = linePoint1.x(), ay = linePoint1.y(), bx = linePoint2.x(), by = linePoint2.y(),
+           px = point.x(), py = point.y();
+
+    double s = (bx-ax)*(py-ay)-(by-ay)*(px-ax);
+
+    return abs(s) > PRECISION ? ( s / abs(s) ): 0;
+}
+
+// функция определяет относительное положение точки: внутри или нет
+int ExMath::
+    pointPositionToTriangle(QPointF a, QPointF b, QPointF c, QPointF p) {
+
+    int s1,s2,s3;
+    s1 = pointPositionToLine(p, a, b);
+    s2 = pointPositionToLine(p, b, c);
+    s3 = pointPositionToLine(p, c, a);
+
+    if ( s2*s1 > PRECISION && s3*s2 > PRECISION ) {
+        return INSIDE;
+    } else if ( abs(s1*s2*s3) < PRECISION ) {
+        return ON_EDGE;
+    } else {
+        return OUTSIDE;
+    }
+}
+
+double** ExMath::staticArray3ToDinamicCast(double arr[][3], int n) {
+    double** dinArr = new double*[n];
+
+    for (int i = 0; i < n; i++) {
+        dinArr[i] = new double[3];
+
+        for(int j = 0; j < 3; j++) {
+            dinArr[i][j] = arr[i][j];
+        }
+    }
+
+    return dinArr;
+}
+
+double ExMath::determinant3(double matr[3][3]) {
+    double **dinMatr = staticArray3ToDinamicCast(matr, 3);
+    double res = determinant(dinMatr, 3);
+
+    for (int i = 0; i < 3; i++) {
+        delete [] dinMatr[i];
+    }
+
+    return res;
+}
 
 //==============================================================================================================
 //                              вычисление определителя
 //==============================================================================================================
 //функция вычисления определителя матрицы
-int ExMath::determinant(double **matr, int n) {
+double ExMath::determinant(double **matr, int n) {
     double temp = 0;   //временная переменная для хранения определителя
     int k = 1;      //степень
     if(n < 1) {

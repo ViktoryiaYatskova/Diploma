@@ -19,8 +19,8 @@ SOURCES +=  main.cpp\
             triangularunit.cpp \
             edge.cpp \
             exMath.cpp \
-            grahamScan.cpp \
-            qroundlist.cpp
+            qroundlist.cpp \
+    grahamTriangulation.cpp
 
 HEADERS  += mainwindow.h \
             delaunaytriangulation.h \
@@ -28,7 +28,8 @@ HEADERS  += mainwindow.h \
             triangularunit.h \
             edge.h \
             exMath.h \
-            grahamScan.h \
-            qroundlist.h
+            qroundlist.h \
+    grahamTriangulation.h \
+    point_position_to_triangle.h
 
 FORMS    += mainwindow.ui

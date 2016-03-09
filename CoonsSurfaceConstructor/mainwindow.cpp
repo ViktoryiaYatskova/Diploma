@@ -16,3 +16,7 @@ MainWindow::~MainWindow() {
 void MainWindow::on_pushButton_clicked() {
     ui->scene->buildTriangular();
 }
+
+void MainWindow::on_clearButton_clicked() {
+    ui->scene->clear();
+}

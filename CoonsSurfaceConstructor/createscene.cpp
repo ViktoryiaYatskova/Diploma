@@ -1,29 +1,22 @@
 #include "createscene.h"
 
-#include <iostream>
-
-void consoleLog(char* error) {
-    std::cout<<error<<std::endl;
-}
-
-void consoleLog(int error) {
-    std::cout<<error<<std::endl;
-}
-
 CreateScene::CreateScene(QWidget *parent) :
     QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {
 
     setAutoFillBackground(false);
 
-    currentMode = MODE::ADD_POINTS;
-    triangulation = NULL;
+    currentMode = ADD_POINTS;
 }
 
 void CreateScene::draw() {
 
     switch (currentMode) {
 
-    case MODE::ADD_POINTS:
+    case ADD_POINTS:
+        drawPoints();
+        break;
+
+    case TRIANGULAR:
         drawTriangularPoints();
         break;
 
@@ -34,7 +27,7 @@ void CreateScene::draw() {
 
 void CreateScene::initializeGL(){
 
-    qglClearColor(Qt::red);
+    qglClearColor(Qt::black);
 
     resizeGL(width(), height());
 }
@@ -55,82 +48,89 @@ void CreateScene::resizeGL(int width, int height){
 }
 
 void CreateScene::paintGL() {
-    drawTriangularPoints();
+    draw();
 }
 
-void CreateScene::drawPoints(QList<QPointF> &points) {
+void CreateScene::drawPoints(QList<QPointF> points) {
     glBegin(GL_POINTS);
-
-    QListIterator<QPointF> i(points);
-    while (i.hasNext()) {
-        QPointF p = i.next();
-        glVertex2f( p.x(), height() - p.y());
-    }
-
+        QListIterator<QPointF> i(points);
+        while (i.hasNext()) {
+            QPointF p = i.next();
+            glVertex2f( p.x(), height() - p.y());
+        }
     glEnd();
 }
 
-void CreateScene::drawEdges(QList<Edge> &edges) {
-    glBegin(GL_LINES);
+void CreateScene::drawEdges(QList<Edge> edges) {
+    glLineWidth(1.0);
 
     QListIterator<Edge> i(edges);
 
     while (i.hasNext()) {
         Edge e = i.next();
-                consoleLog(e.getStartPoint().x());
-                consoleLog(e.getStartPoint().y());
-        glVertex2f( e.getStartPoint().x(), height() - e.getStartPoint().y());
-        glVertex2f( e.getEndPoint().x(), height() - e.getEndPoint().y());
-    }
 
-    glEnd();
+        glBegin(GL_LINES);
+            glVertex2f(e.getStartPoint().x(),height() - e.getStartPoint().y());
+            glVertex2f(e.getEndPoint().x(), height() - e.getEndPoint().y());
+        glEnd();
+    }
+}
+
+void CreateScene::
+    drawPoints() {
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
+
+    glPointSize(3.0);
+
+    glColor3f(0.5f, 0.0f, 0.5f);
+    drawPoints(points.toList());
 }
 
 void CreateScene::drawTriangularPoints() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_POINT_SMOOTH);
     glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_DEPTH_TEST);
 
     glPointSize(3.0);
+
     glColor3f(1.0f, 1.0f, 1.0f);
-    glLineWidth(2.5);
-
     drawPoints(points.toList());
-    QList<Edge> edges;
 
-    if(grahamScan.isSorted()){
-        drawPoints(grahamScan.getHull());
-        edges = grahamScan.getEdgesPreOrder();
-    }
+        glColor3f(0.0f, 0.5f, 0.7f);
+        drawPoints(triangulation.inscribedCircleCenters.toList());
 
-    if(grahamScan.isBuilted()){
-        edges = grahamScan.getHullEdges();
-    }
-
-    drawEdges(edges);
+    glColor3f(1.0f, 1.0f, 1.0f);
+    drawEdges(triangulation.getEdges().toList());
 }
 
 void CreateScene::mouseReleaseEvent(QMouseEvent *event) {
     QPoint lastPos = event->pos();
 
-    if (currentMode == MODE::ADD_POINTS) {
+    if (currentMode == ADD_POINTS) {
         points.append(QPointF(lastPos));
         repaint();
     }
 }
 
 void CreateScene::buildTriangular() {
-    triangulation = new DelaunayTriangulation(points);
-    grahamScan.setPoints(points.toList());
-    grahamScan.prebuild();
-    repaint();
-    grahamScan.build();
+    triangulation.setPoints(points);
+    triangulation.build();
+
+    currentMode = TRIANGULAR;
+    //grahamScan.setPoints(points.toList());
+    //grahamScan.prebuild();
+    //grahamScan.build();
     repaint();
 }
 
 void CreateScene::clear() {
-    grahamScan.clear();
+    points.clear();
+    triangulation.clear();
+
+    currentMode = ADD_POINTS;
     repaint();
 }
 

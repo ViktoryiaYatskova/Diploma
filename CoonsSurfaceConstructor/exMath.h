@@ -5,15 +5,31 @@
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+#include <limits>       // std::numeric_limits
+#include <QPointF>
+#include <iostream>
+#include "point_position_to_triangle.h"
 
 class ExMath {
+private:
+    static const double PRECISION = 0.00001;
 public:
+    static double DOUBLE_MAX;
+
     ExMath();
+    static bool isPointOnLine(QPointF point, QPointF lineA,  QPointF lineB);
     static double** initMatrix(int dim);
-    static int determinant(double **matr, int n);
+    static double determinant(double **matr, int n);
     static void getMatrix(double **matr, int n, double **temp_matr, int indRow, int indCol);
     static void freeMatrixMemory(double **matr, int n);
     static double* solveMatrixEquantion(double **a, double *b, int dim);
+    static double distantBeetweenPoints(const QPointF p1, const QPointF p2);
+    static int pointPositionToLine(QPointF point, QPointF linePoint1, QPointF linePoint2);
+    static int pointPositionToTriangle(QPointF a, QPointF b, QPointF c, QPointF p);
+    static void consoleLog(const char *error);
+    static void consoleLog(int error);
+    static double **staticArray3ToDinamicCast(double arr[][3], int n);
+    static double determinant3(double matr[3][3]);
 };
 
 #endif // MATH_H

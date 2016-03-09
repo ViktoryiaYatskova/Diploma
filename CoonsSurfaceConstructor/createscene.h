@@ -9,10 +9,15 @@
 #include <QDebug>
 
 #include "delaunaytriangulation.h"
-#include "grahamScan.h"
+#include "grahamTriangulation.h"
 #include <QVector>
 #include <QList>
 #include <QPointF>
+
+enum MODE {
+    ADD_POINTS,
+    TRIANGULAR
+};
 
 class CreateScene: public QGLWidget {
 
@@ -31,15 +36,12 @@ protected:
 private:
     void draw();
     void drawTriangularPoints();
-    void drawEdges(QList<Edge> &edges);
+    void drawEdges(QList<Edge> edges);
 
-    void drawPoints(QList<QPointF>&);
+    void drawPoints(QList<QPointF>);
+    void drawPoints();
+
     ~CreateScene();
-
-    enum MODE {
-        ADD_POINTS,
-        TRIANGULAR
-    };
 
     MODE currentMode;
     QPoint lastPos;
@@ -48,8 +50,8 @@ private:
     const QColor hullPointColor;
 
     QVector<QPointF> points;
-    DelaunayTriangulation* triangulation;
-    GrahamScan grahamScan;
+    DelaunayTriangulation triangulation;
+    GrahamTriangulation grahamScan;
 };
 
 #endif // CREATESCENE_H

@@ -1,45 +1,26 @@
-#include "grahamScan.h"
+#include "grahamTriangulation.h"
 #include "exMath.h"
 #include <iostream>
 
-GrahamScan::GrahamScan():isBuilt(false), sorted(false){}
+GrahamTriangulation::GrahamTriangulation():isBuilt(false), sorted(false){}
 
-QList<QPointF> GrahamScan::getPoints() const{
+QList<QPointF> GrahamTriangulation::getPoints() const{
     return points;
 }
 
-void GrahamScan::setPoints(const QList<QPointF>& value) {
+void GrahamTriangulation::setPoints(const QList<QPointF>& value) {
     points = QList<QPointF>(value);
 }
 
-void GrahamScan::addPoints(QPointF point) {
+void GrahamTriangulation::addPoints(QPointF point) {
     points.append(point);
 }
 
-int GrahamScan::size() {
+int GrahamTriangulation::size() {
     return points.length();
 }
 
-QList<Edge> GrahamScan::getHullEdges(){
-    QList<Edge> edges;
-    if(!isBuilt) return edges;
-
-    Edge newEdge;
-
-    for(int i = 1; i < hull.length(); i++) {
-        QPointF point = hull.at(i),
-               prevPoint = hull.at(i-1);
-
-        newEdge = Edge(QPointF(floor(prevPoint.x()+0.5), floor(prevPoint.y()+0.5)),
-                       QPointF(floor(point.x()+0.5), floor(point.y()+0.5)));
-
-        edges.append(newEdge);
-    }
-
-    return edges;
-}
-
-QList<Edge> GrahamScan::getEdgesPreOrder(){
+QList<Edge> GrahamTriangulation::getEdgesPreOrder(){
     QList<Edge> edges;
     if(points.length() < 1) return edges;
 
@@ -68,15 +49,15 @@ QList<Edge> GrahamScan::getEdgesPreOrder(){
     return edges;
 }
 
-bool GrahamScan::isBuilted() {
+bool GrahamTriangulation::isBuilted() {
     return isBuilt;
 }
 
-bool GrahamScan::isSorted() {
+bool GrahamTriangulation::isSorted() {
     return sorted;
 }
 
-void GrahamScan::prebuild() {
+void GrahamTriangulation::prebuild() {
     QPointF centerPoint = getMinXPoint();
 
     points.removeOne(centerPoint);
@@ -86,36 +67,62 @@ void GrahamScan::prebuild() {
     sorted = true;
 }
 
-void GrahamScan::build(){
-    isBuilt = true;
-
+void GrahamTriangulation::build(){
     QRoundList stackPoints;
     QRoundList roundPointsList(points);
     QPointF centerPoint = points[0];
-    roundPointsList.push_back(centerPoint);
 
-    stackPoints.append(points[0]);
-    stackPoints.append(points[1]);
-
-    QPointF curVertex = roundPointsList.get(1);
-    QPointF nextVertex = roundPointsList.get(2);
-
-    for(int i = 1; nextVertex != centerPoint;){
-        if (GrahamScan::isRightTurn(curVertex, nextVertex, stackPoints.last())){
-            stackPoints.append(curVertex);
-            curVertex = roundPointsList.next(i++);
-            nextVertex = roundPointsList.next(i);
-        } else {
-            curVertex = stackPoints.popBack();
-        }
+    for(int j = 1; j < points.length(); j++) {
+       // appendEdge(centerPoint, points[i]);
     }
+
+    //roundPointsList.push_back(centerPoint);
+
+    stackPoints.append(centerPoint);
+    stackPoints.append(roundPointsList.get(1));
+    stackPoints.append(roundPointsList.get(2));
+
+    appendEdge(stackPoints.at(0), stackPoints.at(1));
+    appendEdge(stackPoints.at(1), stackPoints.at(2));
+
+    int i = 2;
+    QPointF prevVertex = roundPointsList.get(i++);
+    QPointF curVertex = roundPointsList.get(i);
+
+    while( curVertex != centerPoint ){
+
+        if (!isLeftTurn(curVertex, prevVertex, stackPoints.last())) {
+            stackPoints.append(curVertex);
+
+            prevVertex = roundPointsList.next(i++);
+            curVertex = roundPointsList.next(i);
+
+        } else {
+            stackPoints.pop_back();
+            prevVertex = stackPoints.last();
+        }      
+    }
+
+    stackPoints.append(prevVertex);
     stackPoints.append(curVertex);
-    stackPoints.append(nextVertex);
+
+    for(int j = 0; j < stackPoints.length(); j++) {
+       appendEdge(stackPoints.at(j), stackPoints.at( (j+1) % stackPoints.length()));
+    }
+    //appendEdge(prevVertex, curVertex);
+    //appendEdge(curVertex, centerPoint);
 
     hull = stackPoints;
+    isBuilt = true;
 }
 
-QPointF GrahamScan::getMinXPoint(){
+void GrahamTriangulation::appendEdge(QPointF p1, QPointF p2){
+    Edge newEdge = Edge(QPointF(floor(p1.x()+0.5), floor(p1.y()+0.5)),
+                   QPointF(floor(p2.x()+0.5), floor(p2.y()+0.5)));
+    edges.append(newEdge);
+}
+
+QPointF GrahamTriangulation::getMinXPoint() {
     double minX = 100000;
     QPointF resPoint;
     QList<QPointF>::iterator i;
@@ -130,7 +137,7 @@ QPointF GrahamScan::getMinXPoint(){
     return resPoint;
 }
 
-void GrahamScan::sortPointsByAngle(){
+void GrahamTriangulation::sortPointsByAngle(){
     QPointF centerPoint = points[0];
     for (int i = points.length() - 1; i >= 1; i--) {
         for (int j = 1; j < i; j++) {
@@ -147,27 +154,37 @@ void GrahamScan::sortPointsByAngle(){
     sorted = true;
 }
 
-double GrahamScan::getAngleTgBetweenPoints(QPointF point, QPointF centerPoint){
+double GrahamTriangulation::getAngleTgBetweenPoints(QPointF point, QPointF centerPoint){
     return (point.y() - centerPoint.y())*1.0/(point.x() - centerPoint.x());
 }
 
-bool GrahamScan::isRightTurn(QPointF a, QPointF c, QPointF b){
+bool GrahamTriangulation::isLeftTurn(QPointF c, QPointF a, QPointF b){
     QPointF u(b.x() - a.x(), b.y() - a.y()),
            v(c.x() - a.x(), c.y() - a.y());
     return u.x()*v.y() - u.y()*v.x() >= 0;
 }
 
-QList<QPointF> GrahamScan::getHull() const{
+QList<QPointF> GrahamTriangulation::getHull() const{
     return hull;
 }
 
-void GrahamScan::setHull(const QList<QPointF> &value){
+void GrahamTriangulation::setHull(const QList<QPointF> &value){
     hull = value;
 }
 
-void GrahamScan::clear(){
+void GrahamTriangulation::clear(){
     points.clear();
     hull.clear();
+    edges.clear();
     sorted = false;
     isBuilt = false;
 }
+
+QList<Edge> GrahamTriangulation::getEdges() const {
+    return edges;
+}
+
+void GrahamTriangulation::setEdges(const QList<Edge> &value) {
+    edges = value;
+}
+
