@@ -9,8 +9,6 @@ private:
     QPointF point1;
     QPointF point2;
 
-    bool isBoundary;
-
 public:
     static int dimension;
 
@@ -23,9 +21,6 @@ public:
 
     QPointF getEndPoint() const;
     void setEndPoint(const QPointF &value);
-
-    bool getIsBoundary() const;
-    void setIsBoundary(bool value);
 
     bool operator==(const Edge &other);
     bool operator !=(const Edge &other);

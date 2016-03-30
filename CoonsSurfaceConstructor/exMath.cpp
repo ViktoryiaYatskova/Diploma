@@ -10,9 +10,27 @@ void ExMath::consoleLog(int error) {
 
 ExMath::ExMath() {}
 
-//const double ExMath::PRECISION = 0.00001;
+const double ExMath::PRECISION = 0.00001;
 
-bool ExMath::isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
+double ExMath::
+    cosAngleBetweenVectors(QPointF endPoint1, QPointF  mutualPoint, QPointF endPoint2) {
+
+    double vector1X = endPoint1.x() - mutualPoint.x(),
+           vector1Y = endPoint1.y() - mutualPoint.y();
+
+    double vector2X = endPoint2.x() - mutualPoint.x(),
+           vector2Y = endPoint2.y() - mutualPoint.y();
+
+    double modVector1 = sqrt(vector1X * vector1X + vector1Y * vector1Y);
+    double modVector2 = sqrt(vector2X * vector2X + vector2Y * vector2Y);
+    double scProduct =  vector1X*vector2X + vector1Y*vector2Y;
+
+    return scProduct / (modVector1 * modVector2);
+}
+
+bool ExMath::
+    isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
+
     return ((point.x() - lineB.x()) * (lineA.y() - lineB.y()) - (point.y() - lineB.y()) * (lineA.x() - lineB.x())) < PRECISION ;
 }
 
@@ -22,13 +40,21 @@ double ExMath::distantBeetweenPoints(const QPointF p1, const QPointF p2) {
     return sqrt(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2));
 }
 
-int ExMath::pointPositionToLine(QPointF point, QPointF linePoint1, QPointF linePoint2) {
+int ExMath::
+    pointPositionToLine(QPointF point, QPointF linePoint1, QPointF linePoint2) {
+
     double ax = linePoint1.x(), ay = linePoint1.y(), bx = linePoint2.x(), by = linePoint2.y(),
            px = point.x(), py = point.y();
 
     double s = (bx-ax)*(py-ay)-(by-ay)*(px-ax);
 
     return abs(s) > PRECISION ? ( s / abs(s) ): 0;
+}
+
+bool ExMath::isLeftTurn(QPointF c, QPointF a, QPointF b){
+    QPointF u(b.x() - a.x(), b.y() - a.y()),
+           v(c.x() - a.x(), c.y() - a.y());
+    return u.x()*v.y() - u.y()*v.x() >= 0;
 }
 
 // функция определяет относительное положение точки: внутри или нет
@@ -73,6 +99,33 @@ double ExMath::determinant3(double matr[3][3]) {
 
     return res;
 }
+
+double area (QPointF a, QPointF b, QPointF c) {
+    return (b.x() - a.x()) * (c.y() - a.y()) - (b.y() - a.y()) * (c.x() - a.x());
+}
+
+bool intersect_1 (float a, float b, float c, float d) {
+    int temp;
+    if (a > b) {
+        temp = a;
+        a = b;
+        b = temp;
+    }
+    if (c > d) {
+        temp = c;
+        c = d;
+        d = temp;
+    }
+    return std::max(a,c) < std::min(b,d);
+}
+
+bool ExMath::areLinesCrossed(QPointF a, QPointF b, QPointF c, QPointF d) {
+    return intersect_1 (a.x(), b.x(), c.x(), d.x())
+        && intersect_1 (a.y(), b.y(), c.y(), d.y())
+        && area(a,b,c) * area(a,b,d) < 0
+        && area(c,d,a) * area(c,d,b) < 0;
+}
+
 
 //==============================================================================================================
 //                              вычисление определителя

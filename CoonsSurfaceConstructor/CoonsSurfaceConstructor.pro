@@ -20,7 +20,8 @@ SOURCES +=  main.cpp\
             edge.cpp \
             exMath.cpp \
             qroundlist.cpp \
-    grahamTriangulation.cpp
+    grahamTriangulation.cpp \
+    convexhull.cpp
 
 HEADERS  += mainwindow.h \
             delaunaytriangulation.h \
@@ -30,6 +31,7 @@ HEADERS  += mainwindow.h \
             exMath.h \
             qroundlist.h \
     grahamTriangulation.h \
-    point_position_to_triangle.h
+    point_position_to_triangle.h \
+    convexhull.h
 
 FORMS    += mainwindow.ui

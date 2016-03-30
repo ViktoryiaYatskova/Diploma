@@ -126,18 +126,6 @@ TriangularUnit::
     isEmpty = false;
 }
 
-bool TriangularUnit::
-    isBoundary() {
-
-    for (int i = 0; i < 3; i++) {
-        if (edges.at(i).getIsBoundary()) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 QPointF TriangularUnit::
     getEscribedCircleCenter() {
 
@@ -198,8 +186,9 @@ QPointF TriangularUnit::
 bool TriangularUnit::
     isPointInsideTriangle(QPointF point) {
 
-    QPointF center = getEscribedCircleCenter();
-    return pow(point.x() - center.x(), 2) + pow(point.y() - center.y(), 2) >= pow(escribedCircleRadius, 2);
+    return ExMath::pointPositionToTriangle(vertexes[0], vertexes[1], vertexes[2], point) == INSIDE;
+    //QPointF center = getEscribedCircleCenter();
+    //return pow(point.x() - center.x(), 2) + pow(point.y() - center.y(), 2) >= pow(escribedCircleRadius, 2);
 }
 
 QPointF TriangularUnit::
@@ -274,7 +263,8 @@ QPointF TriangularUnit::
         }
     }
 
-    throw std::exception();//"The triangle is confluent!");
+    ExMath::consoleLog("The triangle is confluent!");
+    throw std::exception();
 }
 
 Edge& TriangularUnit::
@@ -284,29 +274,6 @@ Edge& TriangularUnit::
     int closestEdgeIndex;
 
     for (int i = 0; i < edges.length(); i++) {
-        // as a sum of the distances to the bound vertexes of the edge
-        double distantToEdge = ExMath::distantBeetweenPoints(edges.at(i).getStartPoint(), point) +
-                        ExMath::distantBeetweenPoints(edges.at(i).getEndPoint(), point);
-
-        closestDistantToEdge = std::min(closestDistantToEdge, distantToEdge);
-
-        if (closestDistantToEdge == distantToEdge) {
-            closestEdgeIndex = i;
-        }
-    }
-
-    return edges[closestEdgeIndex];
-}
-
-Edge& TriangularUnit::
-    getClosestBoundaryEdgeToPoint(const QPointF& point) {
-
-    double closestDistantToEdge = ExMath::DOUBLE_MAX;
-    int closestEdgeIndex;
-
-    for (int i = 0; i < edges.length(); i++) {
-        if (!edges[i].getIsBoundary()) continue;
-
         // as a sum of the distances to the bound vertexes of the edge
         double distantToEdge = ExMath::distantBeetweenPoints(edges.at(i).getStartPoint(), point) +
                         ExMath::distantBeetweenPoints(edges.at(i).getEndPoint(), point);

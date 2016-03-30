@@ -12,11 +12,12 @@
 
 class ExMath {
 private:
-    static const double PRECISION = 0.00001;
+    static const double PRECISION;
 public:
     static double DOUBLE_MAX;
 
     ExMath();
+    static bool areLinesCrossed(QPointF p1, QPointF p2, QPointF p3, QPointF p4);
     static bool isPointOnLine(QPointF point, QPointF lineA,  QPointF lineB);
     static double** initMatrix(int dim);
     static double determinant(double **matr, int n);
@@ -30,6 +31,8 @@ public:
     static void consoleLog(int error);
     static double **staticArray3ToDinamicCast(double arr[][3], int n);
     static double determinant3(double matr[3][3]);
+    static double cosAngleBetweenVectors(QPointF endPoint1, QPointF mutualPoint, QPointF endPoint2);
+    static bool isLeftTurn(QPointF c, QPointF a, QPointF b);
 };
 
 #endif // MATH_H

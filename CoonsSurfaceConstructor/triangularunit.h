@@ -44,9 +44,7 @@ public:
     Edge getTriangleEdgeThatContainsPoint(QPointF &point);
     QPointF getFrontPointToEdge(Edge &edge);
     Edge &getClosestEdgeToPoint(const QPointF &point);
-    Edge &getClosestBoundaryEdgeToPoint(const QPointF &point);
     bool isPointInsideTriangle(QPointF point);
-    bool isBoundary();
     void appendVertex(QPointF vertex);
     TriangularUnit(const Edge &edge1, const Edge &edge2);
 };
