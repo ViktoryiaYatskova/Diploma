@@ -46,18 +46,17 @@ void DelaunayTriangulation::build() {
 
         QVector<TriangularUnit> newTriangles;
 
-        int relation = definePointPositionToTriangulation(pointToAdd);
+        TriangularUnit nearestTriangle = getClosestTriangleToPoint(pointToAdd);
+        int positionToTriangle = definePointPositionToTriangle(pointToAdd, nearestTriangle);
 
-        if (relation == INSIDE) {
+        if (positionToTriangle == INSIDE) {
 
             ExMath::consoleLog("POINT_POSITION_TO_TRIANGLE::INSIDE");
-            TriangularUnit nearestTriangle = getClosestTriangleToPoint(pointToAdd);
             newTriangles = replaceTriangleWithThreeSplittedParts(nearestTriangle, pointToAdd);
 
-        } else if (relation == ON_EDGE) {
+        } else if (positionToTriangle == ON_EDGE) {
 
             ExMath::consoleLog("POINT_POSITION_TO_TRIANGLE::ON_EDGE");
-            TriangularUnit nearestTriangle = getClosestTriangleToPoint(pointToAdd);
             newTriangles = replaceTriangleWithTwoSplittedParts(nearestTriangle, pointToAdd);
 
         } else { // relation == ExMath::POINT_POSITION_TO_TRIANGLE::OUTSIDE
@@ -66,10 +65,10 @@ void DelaunayTriangulation::build() {
             newTriangles = createNewBoundaryTriangles(pointToAdd);
         }
 
-        checkDelaunayConditionLocaly(newTriangles);
+        //checkDelaunayConditionLocaly(newTriangles);
     }
 }
-QVector<Edge> DelaunayTriangulation::
+QSet<Edge> DelaunayTriangulation::
     getEdges() const {
 
     return edges;
@@ -103,6 +102,27 @@ TriangularUnit DelaunayTriangulation::
     return closestTriangular;
 }
 
+Edge &DelaunayTriangulation::
+    getClosestEdgeToPoint(QPointF &p) {
+
+    double minDistantToPoint = ExMath::DOUBLE_MAX;
+    Edge closestEdge, currentEdge;
+
+    QSetIterator<Edge> it(edges);
+
+    while(it.hasNext()) {
+        currentEdge = it.next();
+
+        double distantToPoint = currentEdge.distantToPoint(p);
+        minDistantToPoint = std::min( minDistantToPoint, distantToPoint );
+
+        if ( distantToPoint == minDistantToPoint ) {
+            closestEdge = currentEdge;
+        }
+    }
+    return closestEdge;
+}
+
 int DelaunayTriangulation::
     definePointPositionToTriangle(QPointF &point, TriangularUnit &triangle) {
 
@@ -111,33 +131,29 @@ int DelaunayTriangulation::
     return ExMath::pointPositionToTriangle(vertexes.at(0), vertexes.at(1), vertexes.at(2), point);
 }
 
-int DelaunayTriangulation::
+TriangularUnit DelaunayTriangulation::
     definePointPositionToTriangulation(QPointF &point) {
 
-    QVectorIterator<TriangularUnit> it(triangles);
-    while(it.hasNext()) {
-        TriangularUnit triangle = it.next();
-        QVector<QPointF> vertexes = triangle.getVertexes();
-        if (vertexes.length() < 3) {
-            ExMath::consoleLog("Error triangle");
-        }
-        int positionToTriangle = ExMath::pointPositionToTriangle(vertexes.at(0), vertexes.at(1), vertexes.at(2), point);
-        if (positionToTriangle != OUTSIDE) {
-            return positionToTriangle;
-        }
-    }
+    TriangularUnit emptyTriangle;
+    TriangularUnit closestTriangle = getClosestTriangleToPoint(point);
+    //while(true) {
+        //int positionToTriangle = definePointPositionToTriangle(closestTriangle, point);
+        //if (positionToTriangle != OUTSIDE) {
+            return closestTriangle;
+        //}
+    //}
 
-    return OUTSIDE;
+    //return emptyTriangle;
 }
 
 QVector<TriangularUnit> DelaunayTriangulation::
     replaceTriangleWithThreeSplittedParts(TriangularUnit &triangle, QPointF &splittingPoint) {
 
     QVector<TriangularUnit> newTriangles;
-    QVector<Edge> edges = triangle.getEdges();
+    QSetIterator<Edge> it(triangle.getEdges());
 
-    for (int i = 0, len = edges.length(); i < len; i++) {
-        newTriangles.append(TriangularUnit( edges.at(i), splittingPoint ));
+    while (it.hasNext()) {
+        newTriangles.append(TriangularUnit( it.next(), splittingPoint ));
     }
     triangles.removeOne(triangle);
     appendTriangles(newTriangles);
@@ -150,16 +166,10 @@ QVector<TriangularUnit> DelaunayTriangulation::
 
     QVector<TriangularUnit> newTriangles;
     Edge splittedEdge = triangle.getTriangleEdgeThatContainsPoint(splittingPoint);
+    triangle.getEdges().remove(splittedEdge);
+    QSetIterator<Edge> it(triangle.getEdges());
 
-    int i = 0;
-    Edge remaindEdge1 = splittedEdge != triangle.getEdges().at(i)?
-                                     triangle.getEdges().at(i):         // at(0) i = 0
-                                     triangle.getEdges().at(++i);       // at(1) i = 1
-
-    Edge remaindEdge2 = splittedEdge != triangle.getEdges().at(++i)?    // i = 1 || 2
-                                     triangle.getEdges().at(i):         // i = 1 || 2
-                                     triangle.getEdges().at(++i);       // i = 2 || 3
-
+    Edge remaindEdge1 = it.next(), remaindEdge2 = it.next();
     Edge splittedEdgePart1(splittedEdge.getStartPoint(), splittingPoint);
     Edge splittedEdgePart2(splittingPoint, splittedEdge.getEndPoint());
 
@@ -183,6 +193,18 @@ QVector<TriangularUnit> DelaunayTriangulation::
     return newTriangles;
 }
 
+bool DelaunayTriangulation::
+    arePointsSeparatedByEdge(QPointF& p1, QPointF& p2, Edge& edge) {
+
+    return ExMath::areLinesCrossed(p1, p2, edge.getEndPoint(), edge.getStartPoint());
+}
+ConvexHull DelaunayTriangulation::
+    getConvexHull() const {
+
+    return convexHull;
+}
+
+
 QVector<TriangularUnit> DelaunayTriangulation::
     createNewBoundaryTriangles(QPointF &outerPoint) {
 
@@ -192,11 +214,13 @@ QVector<TriangularUnit> DelaunayTriangulation::
 
     int closestPointIndex = 0;
     double minDistant = ExMath::DOUBLE_MAX;
+    Edge closestEdge = getClosestEdgeToPoint(outerPoint);
 
     for ( int i = 0; i < convexHull.length(); i++) {
-        double distantToPoint = ExMath::distantBeetweenPoints(outerPoint, convexHull.at(i));
+        QPointF curPoint = convexHull.at(i);
+        double distantToPoint = ExMath::distantBeetweenPoints(curPoint, outerPoint);
 
-        if (distantToPoint < minDistant) {
+        if (distantToPoint < minDistant && !arePointsSeparatedByEdge(curPoint, outerPoint, closestEdge)) {
             closestPointIndex = i;
             minDistant = distantToPoint;
         }
@@ -251,14 +275,14 @@ QVector<TriangularUnit> DelaunayTriangulation::
         QPointF hullPointToRemove = convexHull.at(nextHullPointIndex);
         TriangularUnit triangle(leftTangentEnd, outerPoint, hullPointToRemove);
         newTriangles.append(triangle);
-        appendTriangles(triangle);
-        if (nextHullPointIndex != rightTangentEndIndex) {
+        if (hullPointToRemove != rightTangentEnd) {
             convexHull.remove(nextHullPointIndex);
         }
 
         leftTangentEnd = hullPointToRemove;
     }
-    convexHull.insert((leftTangentEndIndex + 1 + convexHull.length()) % convexHull.length(), outerPoint);
+    convexHull.insert((leftTangentEndIndex + 1) % convexHull.length(), outerPoint);
+    appendTriangles(newTriangles);
     return newTriangles;
 }
 
@@ -273,9 +297,9 @@ void DelaunayTriangulation::
 bool DelaunayTriangulation::
     crossPointIncidentEdge(Edge edge, QPointF p) {
 
-    QVector<Edge> edges = findEdgesIncidentToPoint(p);
-    for (int i = 0; i < edges.length(); i++) {
-        Edge curEdge = edges[i];
+    QSetIterator<Edge> it(findEdgesIncidentToPoint(p));
+    while (it.hasNext()) {
+        Edge curEdge = it.next();
         if (ExMath::areLinesCrossed(curEdge.getStartPoint(), curEdge.getEndPoint(), edge.getStartPoint(), edge.getEndPoint())) {
             return true;
         }
@@ -284,14 +308,17 @@ bool DelaunayTriangulation::
     return false;
 }
 
-QVector<Edge> DelaunayTriangulation::
+QSet<Edge> DelaunayTriangulation::
     findEdgesIncidentToPoint(QPointF p) {
 
-    QVector<Edge> incidentEdges;
-    for (int i = 0; i < edges.length(); i++) {
-        Edge curEdge = edges[i];
+    QSet<Edge> incidentEdges;
+    incidentEdges.reserve(3);
+    QSetIterator<Edge> it(edges);
+
+    while (it.hasNext()) {
+        Edge curEdge = it.next();
         if (curEdge.getEndPoint() == p || curEdge.getStartPoint() == p) {
-            incidentEdges.append(curEdge);
+            incidentEdges.insert(curEdge);
         }
     }
 
@@ -299,10 +326,22 @@ QVector<Edge> DelaunayTriangulation::
 }
 
 void DelaunayTriangulation::
-    appendEdges(QVector<Edge> &newEdges) {
+    appendEdges(QSet<Edge> &newEdges) {
 
-    for(int i = 0; i < newEdges.length(); i++) {
-        edges.append(newEdges[i]);
+    QSetIterator<Edge> it(newEdges);
+    while (it.hasNext()) {
+        Edge nextEdge = it.next();
+        edges.insert(nextEdge);
+    }
+}
+
+void DelaunayTriangulation::
+    removeEdges(QSet<Edge> &newEdges) {
+
+    QSetIterator<Edge> it(newEdges);
+    while (it.hasNext()) {
+        Edge nextEdge = it.next();
+        edges.remove(nextEdge);
     }
 }
 
@@ -313,13 +352,83 @@ void DelaunayTriangulation::
     appendEdges(triangle.getEdges());
 }
 
-void DelaunayTriangulation::
-    checkDelaunayConditionLocaly(QVector<TriangularUnit>& triangles) {
+QVector<TriangularUnit> DelaunayTriangulation::
+    getTriangularUnitNeighbors(TriangularUnit& triangular) {
 
-    //QVectorIterator<QPointF> it( triangles );
-    //while (it.hasNext()) {
-    //    TriangularUnit i
-    //}
+    QVector<TriangularUnit> neighbors;
+    neighbors.reserve(3);
+
+    for (int i = 0; i < triangles.length(); i++) {
+        TriangularUnit curTriangle = triangles.at(i);
+        if (curTriangle != triangular && curTriangle.hasMutualEdge(triangular)) {
+            neighbors.append(curTriangle);
+        }
+    }
+
+    return neighbors;
+}
+
+/**
+ * @brief DelaunayTriangulation::checkDelaunayConditionLocaly
+ * @param triangles
+ * @return {bool} is triangulation restructured
+ */
+bool DelaunayTriangulation::
+    checkDelaunayConditionLocaly(QVector<TriangularUnit>& trianglesToCheck) {
+
+    bool isRestructured = false;
+    QVectorIterator<TriangularUnit> it( trianglesToCheck );
+    while (it.hasNext()) {
+        TriangularUnit triangle = it.next();
+        QVector<TriangularUnit> neighbors = getTriangularUnitNeighbors(triangle);
+        QVectorIterator<TriangularUnit> itNeighbors( neighbors );
+
+        QVector<QPointF> triangleVertexes = triangle.getVertexes();
+
+        while (itNeighbors.hasNext()) {
+            TriangularUnit neighbor = itNeighbors.next();
+            QPointF p0 = triangle.getNotAdjacentPoint(neighbor);
+            Edge mutualEdge = neighbor.getMutualEdge(triangle);
+            double x0 = p0.x(), y0 = p0.y();
+
+            int indexMutualVertex1 = triangle.getVertexes().indexOf(mutualEdge.getStartPoint());
+            int indexMutualVertex2 = triangle.getVertexes().indexOf(mutualEdge.getEndPoint());
+            int i1 = abs(indexMutualVertex1 - indexMutualVertex2) == 1?
+                         std::min(indexMutualVertex1, indexMutualVertex2):
+                         std::max(indexMutualVertex1, indexMutualVertex2);
+            int i3 = i1 == indexMutualVertex1? indexMutualVertex2: indexMutualVertex1;
+            int i2 = 3 - i1 - i3;
+            double x1 = triangleVertexes.at(i1).x(), y1 = triangleVertexes.at(i1).y();
+            double x2 = triangleVertexes.at(i2).x(), y2 = triangleVertexes.at(i2).y();
+            double x3 = triangleVertexes.at(i3).x(), y3 = triangleVertexes.at(i3).y();
+
+            double targetValue = abs((x0 - x1)*(y0 - y3) - (x0 - x3)*(y0 - y1))*
+                                 ((x2 - x1)*(x2 - x3) + (y2 - y1)*(y2 - y3)) +
+                                 ((x0 - x1)*(x0 - x3) + (y0 - y1)*(y0 - y3))*
+                                 abs((x2 - x1)*(y2 - y3) - (x2 - x3)*(y2 - y1));
+
+            //targetValue = (x1*x1 + y1*y1)*(y2*x3 - x2*y3) + (x2*x2 + y2*y2)*(x1*y3 - y1*x3) + (x3*x3 + y3*y3)*(y1*x2 - x1*y2) <= 0;
+            if (targetValue < 0) {
+                QPointF p4 = neighbor.getNotAdjacentPoint(triangle);
+                Edge newMutualEdge(p0, p4);
+                TriangularUnit newTriangle1(newMutualEdge, mutualEdge.getEndPoint());
+                TriangularUnit newTriangle2(newMutualEdge, mutualEdge.getStartPoint());
+
+                edges.remove(mutualEdge);
+                edges.insert(newMutualEdge);
+                triangles.removeOne(neighbor);
+                triangles.removeOne(triangle);
+
+                triangles.append(newTriangle1);
+                triangles.append(newTriangle2);
+
+                ExMath::consoleLog("swapped");
+                isRestructured = true;
+            }
+        }
+    }
+
+    return isRestructured;
 }
 
 void DelaunayTriangulation::

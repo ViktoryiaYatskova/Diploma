@@ -10,7 +10,7 @@ class TriangularUnit {
 
 private:
     QVector<QPointF> vertexes;
-    QVector<Edge> edges;
+    QSet<Edge> edges;
     QVector<TriangularUnit> neighborTriangulars;
 
     bool isEmpty;
@@ -18,6 +18,7 @@ private:
     QPointF inscribedCircleCenter;
     double escribedCircleRadius;
 
+    void addPoints(const QPointF p1, const QPointF p2, const QPointF p3);
 public:
     TriangularUnit();
 
@@ -32,21 +33,25 @@ public:
     TriangularUnit(const Edge&, const QPointF);
 
     TriangularUnit(QPointF*, TriangularUnit*);
+    TriangularUnit(const Edge &edge1, const Edge &edge2);
 
     QPointF getEscribedCircleCenter();
     QPointF getInscribedCircleCenter();
 
     bool operator ==(const TriangularUnit&);
+    bool operator !=(const TriangularUnit&);
     bool getIsEmpty();
-    QVector<Edge>& getEdges();
+    QSet<Edge>& getEdges();
     QVector<QPointF> getVertexes() const;
     void setVertexes(const QVector<QPointF> &value);
     Edge getTriangleEdgeThatContainsPoint(QPointF &point);
     QPointF getFrontPointToEdge(Edge &edge);
     Edge &getClosestEdgeToPoint(const QPointF &point);
+    QPointF &getClosestVertexToPoint(const QPointF &point);
     bool isPointInsideTriangle(QPointF point);
-    void appendVertex(QPointF vertex);
-    TriangularUnit(const Edge &edge1, const Edge &edge2);
+    QPointF getNotAdjacentPoint(TriangularUnit& adjacentTriangular);
+    bool hasMutualEdge(TriangularUnit &other);
+    Edge getMutualEdge(TriangularUnit &other);
 };
 
 #endif // TRIANGULARUNIT_H

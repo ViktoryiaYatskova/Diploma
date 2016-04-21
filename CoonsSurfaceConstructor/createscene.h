@@ -27,6 +27,7 @@ public:
     void buildTriangular();
     void clear();
 
+    void drawConvexHull();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void initializeGL();

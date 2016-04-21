@@ -104,6 +104,42 @@ void CreateScene::drawTriangularPoints() {
 
     glColor3f(1.0f, 1.0f, 1.0f);
     drawEdges(triangulation.getEdges().toList());
+    drawConvexHull();
+}
+
+void CreateScene::
+    drawConvexHull() {
+
+    glPushAttrib(GL_ENABLE_BIT); //glPushAttrib is done to return everything to normal after drawing
+    glPushAttrib(GL_COLOR_BUFFER_BIT);
+    glPushAttrib(GL_DEPTH_BUFFER_BIT);
+
+    glLineStipple(1, 0xAAAA);
+    glEnable(GL_LINE_STIPPLE);
+
+    glLineWidth(1.0);
+    glColor3f(1.0f, 0.0f, 1.0f);
+
+    QVectorIterator<QPointF> i(triangulation.getConvexHull());
+    QPointF first = i.next(), p1 = first, p2;
+
+    glBegin(GL_LINES);
+        while (i.hasNext()) {
+            p2 = i.next();
+
+            glVertex2f(p1.x(), height() - p1.y());
+            glVertex2f(p2.x(), height() - p2.y());
+
+            p1 = p2;
+        }
+        p2 = first;
+        glVertex2f(p1.x(), height() - p1.y());
+        glVertex2f(p2.x(), height() - p2.y());
+
+    glEnd();
+    glPopAttrib();
+    glPopAttrib();
+    glPopAttrib();
 }
 
 void CreateScene::mouseReleaseEvent(QMouseEvent *event) {

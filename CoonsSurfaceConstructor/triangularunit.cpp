@@ -10,29 +10,27 @@ void TriangularUnit::setVertexes(const QVector<QPointF> &value) {
 }
 
 TriangularUnit::
-    TriangularUnit() {
+    TriangularUnit():isEmpty(true) {
 
-    //create empty triangular
-    isEmpty = true;
+    vertexes.reserve(3);
+    edges.reserve(3);
 }
 
 TriangularUnit::
     TriangularUnit(const TriangularUnit &triangle) {
 
-    vertexes = QVector<QPointF>(triangle.vertexes);
-    edges = QVector<Edge>(triangle.edges);
-    isEmpty = false;
+    vertexes = QVector<QPointF>(triangle.getVertexes());
+    edges = QSet<Edge>(triangle.edges);
+    isEmpty = triangle.isEmpty;
 }
 
 TriangularUnit::
     TriangularUnit(QPointF* trVertexes) {
 
-    for (int i = 0; i < 3; i++) {
-        vertexes.append(trVertexes[i]);
-    }
+    addPoints(trVertexes[0], trVertexes[1], trVertexes[2]);
 
     for (int i = 0; i < 3; i++) {
-        edges.append(Edge(trVertexes[i], trVertexes[(i + 1) % 3]));
+        edges.insert(Edge(trVertexes[i], trVertexes[(i + 1) % 3]));
     }
 
     isEmpty = false;
@@ -40,47 +38,62 @@ TriangularUnit::
 
 TriangularUnit::
     TriangularUnit(const QPointF p1, const QPointF p2, const QPointF p3) {
-    vertexes.append(p1);
-    vertexes.append(p2);
-    vertexes.append(p3);
+
+    addPoints(p1, p2, p3);
 
     for (int i = 0; i < 3; i++) {
-        edges.append(Edge(vertexes[i], vertexes[(i + 1) % 3]));
+        edges.insert(Edge(vertexes[i], vertexes[(i + 1) % 3]));
     }
 
     isEmpty = false;
 }
 
-TriangularUnit::TriangularUnit(const Edge &edge1, const Edge &edge2, const Edge &edge3) {
-    edges.append(edge1);
-    edges.append(edge2);
-    edges.append(edge3);
+void TriangularUnit::addPoints(const QPointF p1, const QPointF p2, const QPointF p3) {
+    int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
+    if (p > 0) {
+        vertexes.append(p1);
+        vertexes.append(p2);
+        vertexes.append(p3);
+    } else {
+        vertexes.append(p3);
+        vertexes.append(p2);
+        vertexes.append(p1);
+    }
+}
 
-    for (int i = 0; i < 3; i++) {
-        QPointF p = edges.at(i).getStartPoint();
-        if (!vertexes.contains(p)) {
-            vertexes.append(p);
+TriangularUnit::TriangularUnit(const Edge &edge1, const Edge &edge2, const Edge &edge3) {
+    edges.insert(edge1);
+    edges.insert(edge2);
+    edges.insert(edge3);
+
+    QSetIterator<Edge> it(edges);
+    QVector<QPointF> tmpVertexes;
+
+    while (it.hasNext()) {
+        Edge edge = it.next();
+
+        QPointF p = edge.getStartPoint();
+        if (!tmpVertexes.contains(p)) {
+            tmpVertexes.append(p);
         }
 
-        p = edges.at(i).getEndPoint();
-        if (!vertexes.contains(p)) {
-            vertexes.append(p);
+        p = edge.getEndPoint();
+        if (!tmpVertexes.contains(p)) {
+            tmpVertexes.append(p);
         }
     }
-
+    addPoints(tmpVertexes.at(0), tmpVertexes.at(1), tmpVertexes.at(2));
     isEmpty = false;
 }
 
 TriangularUnit::
     TriangularUnit(const Edge &edge, const QPointF point) {
 
-    edges.append(edge);
-    edges.append(Edge(point, edge.getStartPoint()));
-    edges.append(Edge(point, edge.getEndPoint()));
+    edges.insert(edge);
+    edges.insert(Edge(point, edge.getStartPoint()));
+    edges.insert(Edge(point, edge.getEndPoint()));
 
-    vertexes.append(point);
-    vertexes.append(edge.getEndPoint());
-    vertexes.append(edge.getStartPoint());
+    addPoints(point, edge.getEndPoint(), edge.getStartPoint());
 
     isEmpty = false;
 }
@@ -88,28 +101,63 @@ TriangularUnit::
 TriangularUnit::
     TriangularUnit(const Edge &edge1, const Edge &edge2) {
 
-    edges.append(edge1);
-    edges.append(edge2);
+    edges.insert(edge1);
+    edges.insert(edge2);
 
-    appendVertex(edge1.getStartPoint());
-    appendVertex(edge1.getEndPoint());
-    appendVertex(edge2.getStartPoint());
-    appendVertex(edge2.getEndPoint());
+    QPointF p1 = edge1.getMutualPoint(edge2);
+    QPointF p2 = edge1.getStartPoint() == p1 ? edge1.getEndPoint(): edge1.getStartPoint();
+    QPointF p3 = edge2.getStartPoint() == p1 ? edge2.getEndPoint(): edge2.getStartPoint();
+    addPoints(p1, p2, p3);
 
     for (int i = 0; i < 3; i++) {
         Edge edge( vertexes.at(i), vertexes.at(i%3) );
-        if (edges.contains(edge)) {
-            edges.append(edge);
+        if (!edges.contains(edge)) {
+            edges.insert(edge);
         }
     }
 
     isEmpty = false;
 }
 
-void TriangularUnit::appendVertex(QPointF vertex) {
-    if (vertexes.contains(vertex)) {
-        vertexes.append(vertex);
+QPointF TriangularUnit::getNotAdjacentPoint(TriangularUnit &adjacentTriangular) {
+
+    QVector<QPointF> adjacentTriangularPoints = adjacentTriangular.getVertexes();
+
+    for (int i = 0; i < adjacentTriangularPoints.length(); i++) {
+        QPointF p = adjacentTriangularPoints.at(i);
+        if (!vertexes.contains(p)) {
+            return p;
+        }
     }
+    return QPointF();
+}
+
+bool TriangularUnit::
+    hasMutualEdge(TriangularUnit& other) {
+
+    QSetIterator< Edge > it( other.getEdges() );
+    while (it.hasNext()) {
+        Edge edge = it.next();
+        if (edges.contains(edge)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+Edge TriangularUnit::
+    getMutualEdge(TriangularUnit& other) {
+
+    QSetIterator< Edge > it( other.getEdges() );
+    while (it.hasNext()) {
+        Edge edge = it.next();
+        if (edges.contains(edge)) {
+            return edge;
+        }
+    }
+
+    return Edge();
 }
 
 TriangularUnit::
@@ -229,6 +277,10 @@ bool TriangularUnit::
     return true;
 }
 
+bool TriangularUnit::operator !=(const TriangularUnit &other){
+    return !(this->operator ==(other));
+}
+
 bool TriangularUnit::
     getIsEmpty() {
 
@@ -238,17 +290,18 @@ bool TriangularUnit::
 Edge TriangularUnit::
     getTriangleEdgeThatContainsPoint(QPointF &point) {
 
-    for (int i = 0; i < edges.length(); i++) {
-        Edge current = edges.at(i);
+    QSetIterator< Edge > it( edges );
+    while (it.hasNext()) {
+        Edge current = it.next();
         if ( ExMath::isPointOnLine(point, current.getStartPoint(), current.getEndPoint()) ) {
-            return edges.at(i);
+            return current;
         }
     }
 
     throw std::exception(); //"No edge that contains point"
 }
 
-QVector<Edge>& TriangularUnit::
+QSet<Edge>& TriangularUnit::
         getEdges() {
 
     return edges;
@@ -267,23 +320,47 @@ QPointF TriangularUnit::
     throw std::exception();
 }
 
+QPointF& TriangularUnit::
+    getClosestVertexToPoint(const QPointF& point) {
+
+    double closestDistantToPoint = ExMath::DOUBLE_MAX;
+    QPointF closestVertex;
+
+    QVectorIterator< QPointF > it( vertexes );
+    while (it.hasNext()) {
+        QPointF vertex = it.next();
+        // as a sum of the distances to the bound vertexes of the edge
+        double distantToPoint = ExMath::distantBeetweenPoints(vertex, point);
+
+        closestDistantToPoint = std::min(closestDistantToPoint, distantToPoint);
+
+        if (closestDistantToPoint == distantToPoint) {
+            closestVertex = vertex;
+        }
+    }
+
+    return closestVertex;
+}
+
 Edge& TriangularUnit::
     getClosestEdgeToPoint(const QPointF& point) {
 
     double closestDistantToEdge = ExMath::DOUBLE_MAX;
-    int closestEdgeIndex;
+    Edge closestEdge;
 
-    for (int i = 0; i < edges.length(); i++) {
+    QSetIterator< Edge > it( edges );
+    while (it.hasNext()) {
+        Edge edge = it.next();
         // as a sum of the distances to the bound vertexes of the edge
-        double distantToEdge = ExMath::distantBeetweenPoints(edges.at(i).getStartPoint(), point) +
-                        ExMath::distantBeetweenPoints(edges.at(i).getEndPoint(), point);
+        double distantToEdge = ExMath::distantBeetweenPoints(edge.getStartPoint(), point) +
+                        ExMath::distantBeetweenPoints(edge.getEndPoint(), point);
 
         closestDistantToEdge = std::min(closestDistantToEdge, distantToEdge);
 
         if (closestDistantToEdge == distantToEdge) {
-            closestEdgeIndex = i;
+            closestEdge = edge;
         }
     }
 
-    return edges[closestEdgeIndex];
+    return closestEdge;
 }

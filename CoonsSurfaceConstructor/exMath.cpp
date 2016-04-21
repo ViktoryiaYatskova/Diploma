@@ -10,7 +10,7 @@ void ExMath::consoleLog(int error) {
 
 ExMath::ExMath() {}
 
-const double ExMath::PRECISION = 0.00001;
+const double ExMath::PRECISION = 0.0001;
 
 double ExMath::
     cosAngleBetweenVectors(QPointF endPoint1, QPointF  mutualPoint, QPointF endPoint2) {
@@ -31,7 +31,7 @@ double ExMath::
 bool ExMath::
     isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
 
-    return ((point.x() - lineB.x()) * (lineA.y() - lineB.y()) - (point.y() - lineB.y()) * (lineA.x() - lineB.x())) < PRECISION ;
+    return abs((point.x() - lineB.x()) * (lineA.y() - lineB.y()) - (point.y() - lineB.y()) * (lineA.x() - lineB.x())) < PRECISION ;
 }
 
 double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
