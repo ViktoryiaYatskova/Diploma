@@ -41,20 +41,20 @@ void ConvexHull::sortPointsByAngle(){
     for (int i = length() - 1; i >= 1; i--) {
         for (int j = 1; j < i; j++) {
             double angle1 = getAngleTgBetweenPoints(xAt(j), centerPoint),
-                   angle2 = getAngleTgBetweenPoints(xAt(j+1), centerPoint);
+                   angle2 = getAngleTgBetweenPoints(xAt(i), centerPoint);
 
-            if (angle1 < angle2) {
-                QPointF tmp = xAt(j);
-                xAt(j)= xAt(j+1);
-                xAt(j+1) = tmp;
+            if (angle1 > angle2) {
+                QPointF tmp = xAt(i);
+                xAt(i)= xAt(j);
+                xAt(j) = tmp;
             }
         }
     }
-    sorted = true;
+     sorted = true;
 }
 
 double ConvexHull::getAngleTgBetweenPoints(QPointF point, QPointF centerPoint){
-    return (point.y() - centerPoint.y())*1.0/(point.x() - centerPoint.x());
+    return (centerPoint.y() - point.y())*1.0/(centerPoint.x() - point.x());
 }
 
 bool ConvexHull::isLeftTurn(QPointF c, QPointF a, QPointF b){

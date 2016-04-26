@@ -14,9 +14,17 @@ MainWindow::~MainWindow() {
 }
 
 void MainWindow::on_pushButton_clicked() {
-    ui->scene->buildTriangular();
+    ui->scene->buildSimpleTriangular();
 }
 
 void MainWindow::on_clearButton_clicked() {
     ui->scene->clear();
+}
+
+void MainWindow::on_convertToDelaunayTriangular_clicked() {
+    ui->scene->convertToDelaunayTriangular();
+}
+
+void MainWindow::on_convexHull_clicked(){
+    ui->scene->showConvexHull();
 }

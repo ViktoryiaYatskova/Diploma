@@ -1,23 +1,16 @@
 #include "triangularunit.h"
 
 
-QVector<QPointF> TriangularUnit::getVertexes() const {
-    return vertexes;
-}
-
-void TriangularUnit::setVertexes(const QVector<QPointF> &value) {
-    vertexes = value;
-}
 
 TriangularUnit::
-    TriangularUnit():isEmpty(true) {
+    TriangularUnit():isEmpty(true), isRestructered(false) {
 
     vertexes.reserve(3);
     edges.reserve(3);
 }
 
 TriangularUnit::
-    TriangularUnit(const TriangularUnit &triangle) {
+    TriangularUnit(const TriangularUnit &triangle): isRestructered(false) {
 
     vertexes = QVector<QPointF>(triangle.getVertexes());
     edges = QSet<Edge>(triangle.edges);
@@ -25,7 +18,7 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(QPointF* trVertexes) {
+    TriangularUnit(QPointF* trVertexes): isRestructered(false) {
 
     addPoints(trVertexes[0], trVertexes[1], trVertexes[2]);
 
@@ -37,7 +30,7 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(const QPointF p1, const QPointF p2, const QPointF p3) {
+    TriangularUnit(const QPointF p1, const QPointF p2, const QPointF p3): isRestructered(false) {
 
     addPoints(p1, p2, p3);
 
@@ -48,6 +41,25 @@ TriangularUnit::
     isEmpty = false;
 }
 
+QVector<QPointF> TriangularUnit::getVertexes() const {
+    return vertexes;
+}
+
+void TriangularUnit::setVertexes(const QVector<QPointF> &value) {
+    vertexes = value;
+}
+
+
+
+bool TriangularUnit::getIsRestructered() const
+{
+    return isRestructered;
+}
+
+void TriangularUnit::setIsRestructered(bool value)
+{
+    isRestructered = value;
+}
 void TriangularUnit::addPoints(const QPointF p1, const QPointF p2, const QPointF p3) {
     int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
     if (p > 0) {

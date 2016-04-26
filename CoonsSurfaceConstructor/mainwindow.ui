@@ -146,18 +146,18 @@
       <rect>
        <x>0</x>
        <y>470</y>
-       <width>80</width>
+       <width>91</width>
        <height>21</height>
       </rect>
      </property>
      <property name="text">
-      <string>Build</string>
+      <string>Build triangular</string>
      </property>
     </widget>
     <widget class="QPushButton" name="clearButton">
      <property name="geometry">
       <rect>
-       <x>80</x>
+       <x>320</x>
        <y>470</y>
        <width>80</width>
        <height>21</height>
@@ -165,6 +165,32 @@
      </property>
      <property name="text">
       <string>Clear</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="convertToDelaunayTriangular">
+     <property name="geometry">
+      <rect>
+       <x>90</x>
+       <y>470</y>
+       <width>121</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Convert to delaunay</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="convexHull">
+     <property name="geometry">
+      <rect>
+       <x>210</x>
+       <y>470</y>
+       <width>111</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Convex Hull</string>
      </property>
     </widget>
    </widget>

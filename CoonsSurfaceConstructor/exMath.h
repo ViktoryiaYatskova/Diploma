@@ -11,6 +11,7 @@
 #include "point_position_to_triangle.h"
 
 class ExMath {
+
 private:
     static const double PRECISION;
 public:
@@ -33,6 +34,9 @@ public:
     static double determinant3(double matr[3][3]);
     static double cosAngleBetweenVectors(QPointF endPoint1, QPointF mutualPoint, QPointF endPoint2);
     static bool isLeftTurn(QPointF c, QPointF a, QPointF b);
+    static bool isRightTurn(QPointF c, QPointF a, QPointF b);
+    static double distantToLine(QPointF p, QPointF lineA, QPointF lineB);
+    static bool isPointProjectionOnSegment(QPointF point, QPointF lineA, QPointF lineB);
 };
 
 #endif // MATH_H

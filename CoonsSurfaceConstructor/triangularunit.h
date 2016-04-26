@@ -14,6 +14,7 @@ private:
     QVector<TriangularUnit> neighborTriangulars;
 
     bool isEmpty;
+    bool isRestructered;
     QPointF escribedCircleCenter;
     QPointF inscribedCircleCenter;
     double escribedCircleRadius;
@@ -52,6 +53,8 @@ public:
     QPointF getNotAdjacentPoint(TriangularUnit& adjacentTriangular);
     bool hasMutualEdge(TriangularUnit &other);
     Edge getMutualEdge(TriangularUnit &other);
+    bool getIsRestructered() const;
+    void setIsRestructered(bool value);
 };
 
 #endif // TRIANGULARUNIT_H

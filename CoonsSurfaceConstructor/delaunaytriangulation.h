@@ -20,7 +20,7 @@ public:
     QSet<Edge> getEdges() const;
     QSet<Edge> findEdgesIncidentToPoint(QPointF p);
 
-    void build();
+    void build(bool);
     void clear();
     void setPoints(const QVector<QPointF> &value);
 
@@ -28,12 +28,14 @@ public:
     TriangularUnit definePointPositionToTriangulation(QPointF &point);
 
     bool crossPointIncidentEdge(Edge edge, QPointF p);
-    QVector<TriangularUnit> getTriangularUnitNeighbors(TriangularUnit &triangular);
+    QVector<int> getTriangularUnitNeighbors(TriangularUnit &triangular);
     static bool arePointsSeparatedByEdge(QPointF &p1, QPointF &p2, Edge &edge);
 
     void setConvexHull(const ConvexHull &value);
 
     ConvexHull getConvexHull() const;
+
+    void convertToDelaunay();
 
 private:
     QVector<QPointF> points;
@@ -42,7 +44,7 @@ private:
     ConvexHull convexHull;
 
     TriangularUnit getClosestTriangleToPoint(QPointF&);
-    Edge& getClosestEdgeToPoint(QPointF&);
+    Edge& getClosestConvexEdgeToPoint(QPointF&);
 
     static int definePointPositionToTriangle(QPointF& pointToAdd, TriangularUnit& nearestTriangle);
 
@@ -57,6 +59,8 @@ private:
     void appendTriangles(TriangularUnit& triangle);
     void appendEdges(QSet<Edge> &newEdges);
     void removeEdges(QSet<Edge> &newEdges);
+
+    QVector<TriangularUnit> addPointToTriangulation(QPointF);
 };
 
 #endif // DELAUNAYTRIANGULATION_H

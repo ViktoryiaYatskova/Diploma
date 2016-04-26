@@ -20,6 +20,10 @@ private slots:
 
     void on_clearButton_clicked();
 
+    void on_convertToDelaunayTriangular_clicked();
+
+    void on_convexHull_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

@@ -16,7 +16,8 @@
 
 enum MODE {
     ADD_POINTS,
-    TRIANGULAR
+    TRIANGULAR,
+    CONVEX_HULL
 };
 
 class CreateScene: public QGLWidget {
@@ -24,10 +25,12 @@ class CreateScene: public QGLWidget {
 public:
     CreateScene(QWidget *parent = 0);
 
-    void buildTriangular();
+    void buildSimpleTriangular();
     void clear();
 
+    void showConvexHull();
     void drawConvexHull();
+    void convertToDelaunayTriangular();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void initializeGL();
@@ -36,7 +39,7 @@ protected:
 
 private:
     void draw();
-    void drawTriangularPoints();
+    void drawTriangular();
     void drawEdges(QList<Edge> edges);
 
     void drawPoints(QList<QPointF>);

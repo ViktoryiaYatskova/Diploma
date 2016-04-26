@@ -9,6 +9,7 @@ CreateScene::CreateScene(QWidget *parent) :
 }
 
 void CreateScene::draw() {
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     switch (currentMode) {
 
@@ -17,7 +18,12 @@ void CreateScene::draw() {
         break;
 
     case TRIANGULAR:
-        drawTriangularPoints();
+        drawTriangular();
+        break;
+
+    case CONVEX_HULL:
+        drawTriangular();
+        drawConvexHull();
         break;
 
     default:
@@ -27,6 +33,7 @@ void CreateScene::draw() {
 
 void CreateScene::initializeGL(){
 
+    glShadeModel (GL_FLAT);
     qglClearColor(Qt::black);
 
     resizeGL(width(), height());
@@ -56,12 +63,15 @@ void CreateScene::drawPoints(QList<QPointF> points) {
         QListIterator<QPointF> i(points);
         while (i.hasNext()) {
             QPointF p = i.next();
-            glVertex2f( p.x(), height() - p.y());
+            glVertex2f( p.x(), p.y());
         }
     glEnd();
 }
 
 void CreateScene::drawEdges(QList<Edge> edges) {
+    glPushAttrib(GL_ENABLE_BIT);
+
+    glEnable(GL_LINE_SMOOTH);
     glLineWidth(1.0);
 
     QListIterator<Edge> i(edges);
@@ -70,55 +80,73 @@ void CreateScene::drawEdges(QList<Edge> edges) {
         Edge e = i.next();
 
         glBegin(GL_LINES);
-            glVertex2f(e.getStartPoint().x(),height() - e.getStartPoint().y());
-            glVertex2f(e.getEndPoint().x(), height() - e.getEndPoint().y());
+            glVertex2f(e.getStartPoint().x(), e.getStartPoint().y());
+            glVertex2f(e.getEndPoint().x(), e.getEndPoint().y());
         glEnd();
     }
+
+    glPopAttrib();
 }
 
 void CreateScene::
     drawPoints() {
 
+    glPushAttrib(GL_ENABLE_BIT);
+
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
 
     glPointSize(3.0);
 
     glColor3f(0.5f, 0.0f, 0.5f);
     drawPoints(points.toList());
+
+    glPopAttrib();
 }
 
-void CreateScene::drawTriangularPoints() {
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+void CreateScene::
+    drawTriangular() {
+
+    glPushAttrib(GL_ENABLE_BIT);
+
     glEnable(GL_POINT_SMOOTH);
-    glEnable(GL_LINE_SMOOTH);
 
     glPointSize(3.0);
 
     glColor3f(1.0f, 1.0f, 1.0f);
     drawPoints(points.toList());
 
-        glColor3f(0.0f, 0.5f, 0.7f);
-        drawPoints(triangulation.inscribedCircleCenters.toList());
+    glColor3f(0.0f, 0.5f, 0.7f);
+    drawPoints(triangulation.inscribedCircleCenters.toList());
 
     glColor3f(1.0f, 1.0f, 1.0f);
     drawEdges(triangulation.getEdges().toList());
-    drawConvexHull();
+
+    glPopAttrib();
+}
+
+void CreateScene::
+    showConvexHull() {
+
+    currentMode = CONVEX_HULL;
+    repaint();
 }
 
 void CreateScene::
     drawConvexHull() {
 
-    glPushAttrib(GL_ENABLE_BIT); //glPushAttrib is done to return everything to normal after drawing
-    glPushAttrib(GL_COLOR_BUFFER_BIT);
-    glPushAttrib(GL_DEPTH_BUFFER_BIT);
+    if (currentMode != CONVEX_HULL) return;
 
-    glLineStipple(1, 0xAAAA);
+    glPushAttrib(GL_ENABLE_BIT); //glPushAttrib is done to return everything to normal after drawing
+
+    //glEnable(GL_LINE_SMOOTH);
     glEnable(GL_LINE_STIPPLE);
 
+    glPointSize(3.0);
     glLineWidth(1.0);
     glColor3f(1.0f, 0.0f, 1.0f);
+
+    glLineStipple(1, 0xAAAA);
 
     QVectorIterator<QPointF> i(triangulation.getConvexHull());
     QPointF first = i.next(), p1 = first, p2;
@@ -127,18 +155,16 @@ void CreateScene::
         while (i.hasNext()) {
             p2 = i.next();
 
-            glVertex2f(p1.x(), height() - p1.y());
-            glVertex2f(p2.x(), height() - p2.y());
+            glVertex2f(p1.x(), p1.y());
+            glVertex2f(p2.x(), p2.y());
 
             p1 = p2;
         }
         p2 = first;
-        glVertex2f(p1.x(), height() - p1.y());
-        glVertex2f(p2.x(), height() - p2.y());
+        glVertex2f(p1.x(), p1.y());
+        glVertex2f(p2.x(), p2.y());
 
     glEnd();
-    glPopAttrib();
-    glPopAttrib();
     glPopAttrib();
 }
 
@@ -146,19 +172,37 @@ void CreateScene::mouseReleaseEvent(QMouseEvent *event) {
     QPoint lastPos = event->pos();
 
     if (currentMode == ADD_POINTS) {
-        points.append(QPointF(lastPos));
+        points.append(QPointF(lastPos.x(), height() - lastPos.y()));
         repaint();
     }
 }
 
-void CreateScene::buildTriangular() {
+void CreateScene::
+    buildSimpleTriangular() {
+
     triangulation.setPoints(points);
-    triangulation.build();
+    triangulation.build(false);
 
     currentMode = TRIANGULAR;
     //grahamScan.setPoints(points.toList());
     //grahamScan.prebuild();
     //grahamScan.build();
+    repaint();
+}
+
+void CreateScene::convertToDelaunayTriangular() {
+
+    if (currentMode != TRIANGULAR &&
+        currentMode != CONVEX_HULL ) {
+
+        triangulation.setPoints(points);
+        triangulation.build(true);
+        currentMode = TRIANGULAR;
+
+    } else {
+        triangulation.convertToDelaunay();
+    }
+
     repaint();
 }
 

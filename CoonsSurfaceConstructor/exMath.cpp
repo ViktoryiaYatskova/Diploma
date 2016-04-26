@@ -12,6 +12,8 @@ ExMath::ExMath() {}
 
 const double ExMath::PRECISION = 0.0001;
 
+double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
+
 double ExMath::
     cosAngleBetweenVectors(QPointF endPoint1, QPointF  mutualPoint, QPointF endPoint2) {
 
@@ -31,13 +33,25 @@ double ExMath::
 bool ExMath::
     isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
 
-    return abs((point.x() - lineB.x()) * (lineA.y() - lineB.y()) - (point.y() - lineB.y()) * (lineA.x() - lineB.x())) < PRECISION ;
+    double product = QPointF::dotProduct(lineB - point, lineA - point);
+    product /= distantBeetweenPoints(lineB, point) * distantBeetweenPoints(lineA, point);
+
+    return abs(product + 1) < PRECISION;
 }
 
-double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
+bool ExMath::isPointProjectionOnSegment(QPointF point, QPointF lineA, QPointF lineB) {
+    QPointF p1 = lineB, p3 = lineA, p2 = point;
+    double cos = QPointF::dotProduct(p2 - p3, p1 - p3);
+    return cos < 0;
+}
 
 double ExMath::distantBeetweenPoints(const QPointF p1, const QPointF p2) {
     return sqrt(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2));
+}
+
+double ExMath::distantToLine(QPointF p, QPointF lineA, QPointF lineB) {
+    return abs(((lineA.y() - lineB.y()) * p.x() + (lineB.x() - lineA.x()) * p.y() + (lineA.x() * lineB.y() - lineB.x() * lineA.y())) /
+            ExMath::distantBeetweenPoints(lineA, lineB));
 }
 
 int ExMath::
@@ -55,6 +69,10 @@ bool ExMath::isLeftTurn(QPointF c, QPointF a, QPointF b){
     QPointF u(b.x() - a.x(), b.y() - a.y()),
            v(c.x() - a.x(), c.y() - a.y());
     return u.x()*v.y() - u.y()*v.x() >= 0;
+}
+
+bool ExMath::isRightTurn(QPointF c, QPointF a, QPointF b){
+    return !isLeftTurn(c, a, b);
 }
 
 // функция определяет относительное положение точки: внутри или нет
