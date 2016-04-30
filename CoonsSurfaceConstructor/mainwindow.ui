@@ -159,7 +159,7 @@
       <rect>
        <x>320</x>
        <y>470</y>
-       <width>80</width>
+       <width>81</width>
        <height>21</height>
       </rect>
      </property>
@@ -191,6 +191,19 @@
      </property>
      <property name="text">
       <string>Convex Hull</string>
+     </property>
+    </widget>
+    <widget class="QPushButton" name="generatePoints">
+     <property name="geometry">
+      <rect>
+       <x>400</x>
+       <y>470</y>
+       <width>101</width>
+       <height>21</height>
+      </rect>
+     </property>
+     <property name="text">
+      <string>Generate points</string>
      </property>
     </widget>
    </widget>

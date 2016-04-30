@@ -28,3 +28,7 @@ void MainWindow::on_convertToDelaunayTriangular_clicked() {
 void MainWindow::on_convexHull_clicked(){
     ui->scene->showConvexHull();
 }
+
+void MainWindow::on_generatePoints_clicked(){
+    ui->scene->generatePoints();
+}

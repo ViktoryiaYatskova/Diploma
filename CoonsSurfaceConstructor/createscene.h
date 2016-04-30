@@ -31,6 +31,8 @@ public:
     void showConvexHull();
     void drawConvexHull();
     void convertToDelaunayTriangular();
+    void generatePoints();
+
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void initializeGL();
@@ -56,6 +58,8 @@ private:
     QVector<QPointF> points;
     DelaunayTriangulation triangulation;
     GrahamTriangulation grahamScan;
+
+    static const int POINTS_NUMBER;
 };
 
 #endif // CREATESCENE_H

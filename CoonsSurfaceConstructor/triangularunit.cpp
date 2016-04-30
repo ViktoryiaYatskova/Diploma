@@ -10,11 +10,12 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(const TriangularUnit &triangle): isRestructered(false) {
+    TriangularUnit(const TriangularUnit &triangle) {
 
     vertexes = QVector<QPointF>(triangle.getVertexes());
     edges = QSet<Edge>(triangle.edges);
     isEmpty = triangle.isEmpty;
+    isRestructered = triangle.isRestructered;
 }
 
 TriangularUnit::
@@ -48,8 +49,6 @@ QVector<QPointF> TriangularUnit::getVertexes() const {
 void TriangularUnit::setVertexes(const QVector<QPointF> &value) {
     vertexes = value;
 }
-
-
 
 bool TriangularUnit::getIsRestructered() const
 {
@@ -120,13 +119,7 @@ TriangularUnit::
     QPointF p2 = edge1.getStartPoint() == p1 ? edge1.getEndPoint(): edge1.getStartPoint();
     QPointF p3 = edge2.getStartPoint() == p1 ? edge2.getEndPoint(): edge2.getStartPoint();
     addPoints(p1, p2, p3);
-
-    for (int i = 0; i < 3; i++) {
-        Edge edge( vertexes.at(i), vertexes.at(i%3) );
-        if (!edges.contains(edge)) {
-            edges.insert(edge);
-        }
-    }
+    edges.insert(Edge(p2, p3));
 
     isEmpty = false;
 }

@@ -36,9 +36,21 @@ inline uint qHash (const QPointF & key){
 
 inline uint qHash(const Edge& edge) {
     uint seed = 0;
+    QPointF p1, p2;
 
-    seed ^= qHash(edge.getStartPoint()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
-    seed ^= qHash(edge.getEndPoint()) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    if (edge.getStartPoint().x() < edge.getEndPoint().x() ||
+        (edge.getStartPoint().x() == edge.getEndPoint().x() &&
+         edge.getStartPoint().y() < edge.getEndPoint().y())) {
+
+        p1 = edge.getStartPoint();
+        p2 = edge.getEndPoint();
+    } else {
+        p2 = edge.getStartPoint();
+        p1 = edge.getEndPoint();
+    }
+
+    seed ^= qHash(p1) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
+    seed ^= qHash(p2) + 0x9e3779b9 + (seed << 6) + (seed >> 2);
 
     return seed;
 }

@@ -1,5 +1,7 @@
 #include "createscene.h"
 
+const int CreateScene::POINTS_NUMBER = 25;
+
 CreateScene::CreateScene(QWidget *parent) :
     QGLWidget(QGLFormat(QGL::SampleBuffers), parent) {
 
@@ -135,7 +137,7 @@ void CreateScene::
 void CreateScene::
     drawConvexHull() {
 
-    if (currentMode != CONVEX_HULL) return;
+    if (currentMode != CONVEX_HULL || points.length() < 3) return;
 
     glPushAttrib(GL_ENABLE_BIT); //glPushAttrib is done to return everything to normal after drawing
 
@@ -172,6 +174,7 @@ void CreateScene::mouseReleaseEvent(QMouseEvent *event) {
     QPoint lastPos = event->pos();
 
     if (currentMode == ADD_POINTS) {
+        if(points.contains(lastPos)) { return; }
         points.append(QPointF(lastPos.x(), height() - lastPos.y()));
         repaint();
     }
@@ -179,6 +182,7 @@ void CreateScene::mouseReleaseEvent(QMouseEvent *event) {
 
 void CreateScene::
     buildSimpleTriangular() {
+    if (points.length() < 3) return;
 
     triangulation.setPoints(points);
     triangulation.build(false);
@@ -191,6 +195,7 @@ void CreateScene::
 }
 
 void CreateScene::convertToDelaunayTriangular() {
+    if (points.length() < 3) return;
 
     if (currentMode != TRIANGULAR &&
         currentMode != CONVEX_HULL ) {
@@ -203,6 +208,17 @@ void CreateScene::convertToDelaunayTriangular() {
         triangulation.convertToDelaunay();
     }
 
+    repaint();
+}
+
+void CreateScene::generatePoints() {
+    if (currentMode != ADD_POINTS) { return; }
+
+    for (int i = 0; i < POINTS_NUMBER; i++) {
+        int x = std::rand() * std::rand() % width();
+        int y = std::rand() * std::rand() % height();
+        points.append(QPointF(x, y));
+    }
     repaint();
 }
 

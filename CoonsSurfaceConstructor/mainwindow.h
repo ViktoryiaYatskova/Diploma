@@ -24,6 +24,8 @@ private slots:
 
     void on_convexHull_clicked();
 
+    void on_generatePoints_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

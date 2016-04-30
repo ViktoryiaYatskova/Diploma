@@ -143,11 +143,10 @@ Edge &DelaunayTriangulation::
         bool isRightTurn = ExMath::isRightTurn(currentEdgeB, p, currentEdgeA);
 
         if ( isRightTurn ) {
-            minDistantToPoint = std::min( minDistantToPoint, distantToPoint );
-        }
-
-        if ( isRightTurn && distantToPoint == minDistantToPoint ) {
-            closestEdge = currentEdge;
+            if ( distantToPoint < minDistantToPoint ) {
+                minDistantToPoint = distantToPoint;
+                closestEdge = currentEdge;
+            }
         }
         prevPoint = currentEdgeB;
     }
@@ -208,11 +207,10 @@ QVector<TriangularUnit> DelaunayTriangulation::
     Edge splittedEdgePart1(splittedEdge.getStartPoint(), splittingPoint);
     Edge splittedEdgePart2(splittingPoint, splittedEdge.getEndPoint());
 
-    if (convexHull.contains(splittedEdge.getStartPoint()) &&
-        convexHull.contains(splittedEdge.getEndPoint()) ) {
+    int startPointIndex = convexHull.indexOf(splittedEdge.getStartPoint());
+    int endPointIndex = convexHull.indexOf(splittedEdge.getEndPoint());
 
-        int startPointIndex = convexHull.indexOf(splittedEdge.getStartPoint());
-        int endPointIndex = convexHull.indexOf(splittedEdge.getEndPoint());
+    if ( startPointIndex >= 0 && endPointIndex >= 0 ) {
         convexHull.insert(std::max(startPointIndex, endPointIndex), splittingPoint);
     }
 
@@ -419,6 +417,10 @@ bool DelaunayTriangulation::
 
         QVector<QPointF> triangleVertexes = triangle.getVertexes();
 
+        if (neighborsIndexes.length() > 3) {
+            ExMath::consoleLog(neighborsIndexes.length());
+        }
+
         while (itNeighbors.hasNext()) {
             int neighborIndex = itNeighbors.next();
             TriangularUnit neighbor = triangles.at(neighborIndex);
@@ -426,12 +428,12 @@ bool DelaunayTriangulation::
             Edge mutualEdge = neighbor.getMutualEdge(triangle);
             double x0 = p0.x(), y0 = p0.y();
 
-            int indexMutualVertex1 = triangle.getVertexes().indexOf(mutualEdge.getStartPoint());
-            int indexMutualVertex2 = triangle.getVertexes().indexOf(mutualEdge.getEndPoint());
-            int i1 = abs(indexMutualVertex1 - indexMutualVertex2) == 1?
+            int indexMutualVertex1 = triangleVertexes.indexOf(mutualEdge.getStartPoint());
+            int indexMutualVertex2 = triangleVertexes.indexOf(mutualEdge.getEndPoint());
+            int i1 = (abs(indexMutualVertex1 - indexMutualVertex2) == 1)?
                          std::min(indexMutualVertex1, indexMutualVertex2):
                          std::max(indexMutualVertex1, indexMutualVertex2);
-            int i3 = i1 == indexMutualVertex1? indexMutualVertex2: indexMutualVertex1;
+            int i3 = (i1 == indexMutualVertex1)? indexMutualVertex2: indexMutualVertex1;
             int i2 = 3 - i1 - i3;
             double x1 = triangleVertexes.at(i1).x(), y1 = triangleVertexes.at(i1).y();
             double x2 = triangleVertexes.at(i2).x(), y2 = triangleVertexes.at(i2).y();
@@ -443,21 +445,24 @@ bool DelaunayTriangulation::
                                  abs((x2 - x1)*(y2 - y3) - (x2 - x3)*(y2 - y1));
 
             //targetValue = (x1*x1 + y1*y1)*(y2*x3 - x2*y3) + (x2*x2 + y2*y2)*(x1*y3 - y1*x3) + (x3*x3 + y3*y3)*(y1*x2 - x1*y2) <= 0;
-            if (targetValue < 0 && !triangle.getIsRestructered() && !neighbor.getIsRestructered()) {
+            if (targetValue < 0/* && !triangle.getIsRestructered() && !neighbor.getIsRestructered()*/) {
                 QPointF p4 = neighbor.getNotAdjacentPoint(triangle);
                 Edge newMutualEdge(p0, p4);
                 TriangularUnit newTriangle1(newMutualEdge, mutualEdge.getEndPoint());
                 TriangularUnit newTriangle2(newMutualEdge, mutualEdge.getStartPoint());
+                //newTriangle1.setIsRestructered(true);
+                //newTriangle2.setIsRestructered(true);
 
                 edges.remove(mutualEdge);
                 edges.insert(newMutualEdge);
-                triangles[neighborIndex].setIsRestructered(true);
-                triangles[triangles.indexOf(triangle)].setIsRestructered(true);
-                trianglesToRemove.append(neighbor);
-                trianglesToRemove.append(triangle);
+                triangles[neighborIndex] = newTriangle1;//.setIsRestructered(true);
+                triangles[triangles.indexOf(triangle)] = newTriangle2;//.setIsRestructered(true);
+                break;
+                //trianglesToRemove.append(neighbor);
+                //trianglesToRemove.append(triangle);
 
-                trianglesToAdd.append(newTriangle1);
-                trianglesToAdd.append(newTriangle2);
+                //trianglesToAdd.append(newTriangle1);
+                //trianglesToAdd.append(newTriangle2);
 
                 ExMath::consoleLog("swapped");
                 isRestructured = true;
@@ -465,7 +470,7 @@ bool DelaunayTriangulation::
         }
     }
 
-    QListIterator< TriangularUnit > itAdd(trianglesToAdd);
+    /*QListIterator< TriangularUnit > itAdd(trianglesToAdd);
     while (itAdd.hasNext()) {
        triangles.append(itAdd.next());
     }
@@ -476,7 +481,7 @@ bool DelaunayTriangulation::
         TriangularUnit removeTriangle = itRemove.next();
         triangles.removeOne(removeTriangle);
         //removeEdges(removeTriangle.getEdges());
-    }
+    }*/
 
     return isRestructured;
 }
