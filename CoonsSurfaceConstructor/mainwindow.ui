@@ -118,9 +118,9 @@
     <property name="geometry">
      <rect>
       <x>0</x>
-      <y>-10</y>
+      <y>0</y>
       <width>701</width>
-      <height>491</height>
+      <height>481</height>
      </rect>
     </property>
     <property name="sizePolicy">
@@ -141,71 +141,71 @@
     <property name="autoFillBackground">
      <bool>true</bool>
     </property>
-    <widget class="QPushButton" name="pushButton">
-     <property name="geometry">
-      <rect>
-       <x>0</x>
-       <y>470</y>
-       <width>91</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Build triangular</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="clearButton">
-     <property name="geometry">
-      <rect>
-       <x>320</x>
-       <y>470</y>
-       <width>81</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Clear</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="convertToDelaunayTriangular">
-     <property name="geometry">
-      <rect>
-       <x>90</x>
-       <y>470</y>
-       <width>121</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Convert to delaunay</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="convexHull">
-     <property name="geometry">
-      <rect>
-       <x>210</x>
-       <y>470</y>
-       <width>111</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Convex Hull</string>
-     </property>
-    </widget>
-    <widget class="QPushButton" name="generatePoints">
-     <property name="geometry">
-      <rect>
-       <x>400</x>
-       <y>470</y>
-       <width>101</width>
-       <height>21</height>
-      </rect>
-     </property>
-     <property name="text">
-      <string>Generate points</string>
-     </property>
-    </widget>
+   </widget>
+   <widget class="QPushButton" name="convertToDelaunayTriangular">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>480</y>
+      <width>121</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Delaunay triangular</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="pushButton">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>480</y>
+      <width>91</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Build triangular</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="convexHull">
+    <property name="geometry">
+     <rect>
+      <x>210</x>
+      <y>480</y>
+      <width>111</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Convex Hull</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="clearButton">
+    <property name="geometry">
+     <rect>
+      <x>320</x>
+      <y>480</y>
+      <width>81</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Clear</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="generatePoints">
+    <property name="geometry">
+     <rect>
+      <x>400</x>
+      <y>480</y>
+      <width>101</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Generate points</string>
+    </property>
    </widget>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -217,14 +217,6 @@
      <height>20</height>
     </rect>
    </property>
-  </widget>
-  <widget class="QToolBar" name="mainToolBar">
-   <attribute name="toolBarArea">
-    <enum>TopToolBarArea</enum>
-   </attribute>
-   <attribute name="toolBarBreak">
-    <bool>false</bool>
-   </attribute>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

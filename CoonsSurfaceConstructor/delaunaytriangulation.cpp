@@ -406,8 +406,6 @@ bool DelaunayTriangulation::
     checkDelaunayConditionLocaly(QVector<TriangularUnit>& trianglesToCheck) {
 
     bool isRestructured = false;
-    QList< TriangularUnit > trianglesToAdd;
-    QList< TriangularUnit > trianglesToRemove;
 
     for (int i = 0; i < trianglesToCheck.length(); i++) {
         int triangleIndex = i;
@@ -445,43 +443,25 @@ bool DelaunayTriangulation::
                                  abs((x2 - x1)*(y2 - y3) - (x2 - x3)*(y2 - y1));
 
             //targetValue = (x1*x1 + y1*y1)*(y2*x3 - x2*y3) + (x2*x2 + y2*y2)*(x1*y3 - y1*x3) + (x3*x3 + y3*y3)*(y1*x2 - x1*y2) <= 0;
-            if (targetValue < 0/* && !triangle.getIsRestructered() && !neighbor.getIsRestructered()*/) {
+            if (targetValue < 0) {
                 QPointF p4 = neighbor.getNotAdjacentPoint(triangle);
                 Edge newMutualEdge(p0, p4);
                 TriangularUnit newTriangle1(newMutualEdge, mutualEdge.getEndPoint());
                 TriangularUnit newTriangle2(newMutualEdge, mutualEdge.getStartPoint());
-                //newTriangle1.setIsRestructered(true);
-                //newTriangle2.setIsRestructered(true);
 
                 edges.remove(mutualEdge);
                 edges.insert(newMutualEdge);
-                triangles[neighborIndex] = newTriangle1;//.setIsRestructered(true);
-                triangles[triangles.indexOf(triangle)] = newTriangle2;//.setIsRestructered(true);
+                triangles[neighborIndex] = newTriangle1;
+                triangles[triangles.indexOf(triangle)] = newTriangle2;
+                trianglesToCheck.append(newTriangle1);
+                trianglesToCheck.append(newTriangle2);
                 break;
-                //trianglesToRemove.append(neighbor);
-                //trianglesToRemove.append(triangle);
-
-                //trianglesToAdd.append(newTriangle1);
-                //trianglesToAdd.append(newTriangle2);
 
                 ExMath::consoleLog("swapped");
                 isRestructured = true;
             }
         }
     }
-
-    /*QListIterator< TriangularUnit > itAdd(trianglesToAdd);
-    while (itAdd.hasNext()) {
-       triangles.append(itAdd.next());
-    }
-
-    QListIterator< TriangularUnit > itRemove(trianglesToRemove);
-
-    while (itRemove.hasNext()) {
-        TriangularUnit removeTriangle = itRemove.next();
-        triangles.removeOne(removeTriangle);
-        //removeEdges(removeTriangle.getEdges());
-    }*/
 
     return isRestructured;
 }
