@@ -36,6 +36,7 @@ HEADERS  += mainwindow.h \
     grahamTriangulation.h \
     point_position_to_triangle.h \
     convexhull.h \
-    coons_triangular_surface.h
+    coons_triangular_surface.h \
+    definitions.h
 
 FORMS    += mainwindow.ui

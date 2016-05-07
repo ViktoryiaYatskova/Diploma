@@ -1,19 +1,19 @@
 #include "qlist.h"
-#include "QPoint.h"
+#include "definitions.h"
 
 #ifndef QROUNDLIST_H
 #define QROUNDLIST_H
 
-class QRoundList:public QList<QPointF>
+class QRoundList:public QList<Point>
 {
 public:
     QRoundList();
-    QRoundList(QList<QPointF>& list);
-    QPointF preLast();
-    QPointF last();
-    QPointF next(int i);
-    QPointF get(int i);
-    QPointF popBack();
+    QRoundList(QList<Point>& list);
+    Point preLast();
+    Point last();
+    Point next(int i);
+    Point get(int i);
+    Point popBack();
 
     int getStartIndex() const;
     int getLastIndex() const;

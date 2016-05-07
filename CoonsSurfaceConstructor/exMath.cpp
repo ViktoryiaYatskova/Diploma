@@ -15,7 +15,7 @@ const double ExMath::PRECISION = 0.0001;
 double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
 
 double ExMath::
-    cosAngleBetweenVectors(QPointF endPoint1, QPointF  mutualPoint, QPointF endPoint2) {
+    cosAngleBetweenVectors(Point endPoint1, Point  mutualPoint, Point endPoint2) {
 
     double vector1X = endPoint1.x() - mutualPoint.x(),
            vector1Y = endPoint1.y() - mutualPoint.y();
@@ -31,62 +31,66 @@ double ExMath::
 }
 
 bool ExMath::
-    isPointOnLine(QPointF point, QPointF lineA, QPointF lineB) {
+    isPointOnLine(Point point, Point lineA, Point lineB) {
 
-    double product = QPointF::dotProduct(lineB - point, lineA - point);
+    double product = dotProduct2D(lineB - point, lineA - point);
     product /= distantBeetweenPoints(lineB, point) * distantBeetweenPoints(lineA, point);
 
-    return abs(product + 1) < PRECISION;
+    return fabs(product + 1) < PRECISION;
 }
 
-bool ExMath::isPointProjectionOnSegment(QPointF point, QPointF lineA, QPointF lineB) {
-    QPointF p1 = lineB, p3 = lineA, p2 = point;
-    double cos = QPointF::dotProduct(p2 - p3, p1 - p3);
+float ExMath::dotProduct2D(Point p1, Point p2) {
+    return p1.x() * p2.x() + p1.y() * p2.y();
+}
+
+bool ExMath::isPointProjectionOnSegment(Point point, Point lineA, Point lineB) {
+    Point p1 = lineB, p3 = lineA, p2 = point;
+    double cos = dotProduct2D(p2 - p3, p1 - p3);
     return cos < 0;
 }
 
-double ExMath::distantBeetweenPoints(const QPointF p1, const QPointF p2) {
+double ExMath::distantBeetweenPoints(const Point p1, const Point p2) {
     return sqrt(pow(p1.x() - p2.x(), 2) + pow(p1.y() - p2.y(), 2));
 }
 
-double ExMath::distantToLine(QPointF p, QPointF lineA, QPointF lineB) {
-    return abs(((lineA.y() - lineB.y()) * p.x() + (lineB.x() - lineA.x()) * p.y() + (lineA.x() * lineB.y() - lineB.x() * lineA.y())) /
+double ExMath::distantToLine(Point p, Point lineA, Point lineB) {
+    return fabs(((lineA.y() - lineB.y()) * p.x() + (lineB.x() - lineA.x()) * p.y() + (lineA.x() * lineB.y() - lineB.x() * lineA.y())) /
             ExMath::distantBeetweenPoints(lineA, lineB));
 }
 
 int ExMath::
-    pointPositionToLine(QPointF point, QPointF linePoint1, QPointF linePoint2) {
+    pointPositionToLine(Point point, Point linePoint1, Point linePoint2) {
 
     double ax = linePoint1.x(), ay = linePoint1.y(), bx = linePoint2.x(), by = linePoint2.y(),
            px = point.x(), py = point.y();
 
     double s = (bx-ax)*(py-ay)-(by-ay)*(px-ax);
 
-    return abs(s) > PRECISION ? ( s / abs(s) ): 0;
+    return fabs(s) > PRECISION ? ( s / fabs(s) ): 0;
 }
 
-bool ExMath::isLeftTurn(QPointF c, QPointF a, QPointF b){
-    QPointF u(b.x() - a.x(), b.y() - a.y()),
-           v(c.x() - a.x(), c.y() - a.y());
+bool ExMath::isLeftTurn(Point c, Point a, Point b){
+    Point u(b.x() - a.x(), b.y() - a.y(), 0),
+           v(c.x() - a.x(), c.y() - a.y(), 0);
     return u.x()*v.y() - u.y()*v.x() >= 0;
 }
 
-bool ExMath::isRightTurn(QPointF c, QPointF a, QPointF b){
+bool ExMath::isRightTurn(Point c, Point a, Point b){
     return !isLeftTurn(c, a, b);
 }
 
 // функция определяет относительное положение точки: внутри или нет
 int ExMath::
-    pointPositionToTriangle(QPointF a, QPointF b, QPointF c, QPointF p) {
+    pointPositionToTriangle(Point a, Point b, Point c, Point p) {
 
     int s1,s2,s3;
     s1 = pointPositionToLine(p, a, b);
     s2 = pointPositionToLine(p, b, c);
     s3 = pointPositionToLine(p, c, a);
 
-    if ( s2*s1 > PRECISION && s3*s2 > PRECISION ) {
+    if ( s2*s1 > 0 && s3*s2 > 0 ) {
         return INSIDE;
-    } else if ( abs(s1*s2*s3) < PRECISION ) {
+    } else if ( s1*s2*s3 == 0 ) {
         return ON_EDGE;
     } else {
         return OUTSIDE;
@@ -118,7 +122,7 @@ double ExMath::determinant3(double matr[3][3]) {
     return res;
 }
 
-double area (QPointF a, QPointF b, QPointF c) {
+double area (Point a, Point b, Point c) {
     return (b.x() - a.x()) * (c.y() - a.y()) - (b.y() - a.y()) * (c.x() - a.x());
 }
 
@@ -137,7 +141,7 @@ bool intersect_1 (float a, float b, float c, float d) {
     return std::max(a,c) < std::min(b,d);
 }
 
-bool ExMath::areLinesCrossed(QPointF a, QPointF b, QPointF c, QPointF d) {
+bool ExMath::areLinesCrossed(Point a, Point b, Point c, Point d) {
     return intersect_1 (a.x(), b.x(), c.x(), d.x())
         && intersect_1 (a.y(), b.y(), c.y(), d.y())
         && area(a,b,c) * area(a,b,d) < 0
@@ -295,12 +299,12 @@ double* ExMath::solveMatrixEquantion(double** a, double* b, int dim) {
 }
 
 /*
-QPointF& QPointF::
-    getClosestPointTo(QPointF* otherPoints, int length) {
+Point& Point::
+    getClosestPointTo(Point* otherPoints, int length) {
 
     if (length < 1) return;
 
-    QPointF closestPoint, currentPoint;
+    Point closestPoint, currentPoint;
     double closestDistant = -1;
 
     for (int i = 0; i < length; i++) {
@@ -314,15 +318,15 @@ QPointF& QPointF::
     return closestPoint;
 }
 
-QPointF* QPointF::
-    getTwoClosestPointTo(QPointF* otherPoints, int length) {
+Point* Point::
+    getTwoClosestPointTo(Point* otherPoints, int length) {
 
     if (length < 1) return;
 
-    QPointF *closestPoints = new QPointF[2];
+    Point *closestPoints = new Point[2];
     closestPoints[0] = this->getClosestPointTo(otherPoints, length);
 
-    QPointF currentPoint;
+    Point currentPoint;
     double closestDistant = -1;
 
     for (int i = 0; i < length; i++) {
@@ -349,8 +353,8 @@ QPointF* QPointF::
  * @param circlePoints
  * @return
 // */
-//int QPointF::
-//    isPointInsideEscribedCircle(QVector <QPointF> & circlePoints) {
+//int Point::
+//    isPointInsideEscribedCircle(QVector <Point> & circlePoints) {
 
 //    if (circlePoints.length() < 3) throw new ;
 
@@ -376,7 +380,7 @@ QPointF* QPointF::
 //    return pow(x - x0, 2) + pow( y - y0, 2) - r*r;
 //}
 
-//double QPointF::distantTo(QPointF &point) {
+//double Point::distantTo(Point &point) {
 //    return sqrt(pow(point.x() - this->x(), 2) + pow(point.y() - this->y(), 2));
 //}
 
@@ -386,7 +390,7 @@ QPointF* QPointF::
 // * @param dim
 // * @return
 // */
-//double QPointF::determinant(double** matrix, int dim) {
+//double Point::determinant(double** matrix, int dim) {
 //    int p = 0, t;
 //    for (int i = 0; i < dim-1; i++) {
 //        t = 1;

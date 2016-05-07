@@ -9,29 +9,29 @@ Edge::
         point2(other.point2) {}
 
 Edge::
-    Edge(const QPointF &p1, const QPointF &p2){
+    Edge(const Point &p1, const Point &p2){
 
     point1 = p1;
     point2 = p2;
 }
 
-QPointF Edge::
+Point Edge::
     getStartPoint() const {
 
     return point1;
 }
 
 void Edge::
-    setStartPoint(const QPointF &value) {
+    setStartPoint(const Point &value) {
 
     point1 = value;
 }
 
-QPointF Edge::getEndPoint() const {
+Point Edge::getEndPoint() const {
     return point2;
 }
 
-void Edge::setEndPoint(const QPointF &value) {
+void Edge::setEndPoint(const Point &value) {
     point1 = value;
 }
 
@@ -49,14 +49,14 @@ bool Edge::areConnected(const Edge& other) {
             other.getStartPoint() == getEndPoint() || other.getEndPoint() == getStartPoint();
 }
 
-QPointF Edge::getMutualPoint(const Edge& other) const {
+Point Edge::getMutualPoint(const Edge& other) const {
     if( other.getEndPoint() == getEndPoint() || other.getEndPoint() == getStartPoint() )
         return other.getEndPoint();
 
     return other.getStartPoint();
 }
 
-double Edge::distantToPoint(QPointF &p) {
+double Edge::distantToPoint(Point &p) {
     double distToPoint1 = ExMath::distantBeetweenPoints(p, point1);
     double distToPoint2 = ExMath::distantBeetweenPoints(p, point2);
     double distToEdgeLine = ExMath::distantToLine(p, point1, point2);

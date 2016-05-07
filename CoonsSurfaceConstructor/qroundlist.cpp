@@ -6,7 +6,7 @@ QRoundList::QRoundList(){
     startIndex = 0;
 }
 
-QRoundList::QRoundList(QList<QPointF> &list){
+QRoundList::QRoundList(QList<Point> &list){
     startIndex = 0;
     for(int i = 0; i < list.length(); i++)
     {
@@ -14,23 +14,23 @@ QRoundList::QRoundList(QList<QPointF> &list){
     }
 }
 
-QPointF QRoundList::preLast()
+Point QRoundList::preLast()
 {
     int lastIndex = length() - startIndex - 1;
     return get(lastIndex - 1);
 }
 
-QPointF QRoundList::last()
+Point QRoundList::last()
 {
     int lastIndex = length() - startIndex - 1;
     return get(lastIndex);
 }
 
-QPointF QRoundList::next(int i) {
+Point QRoundList::next(int i) {
     return get(this->nextIndex(i));
 }
 
-QPointF QRoundList::get(int index) {
+Point QRoundList::get(int index) {
     return at((index + startIndex+length()) % length());
 }
 
@@ -38,8 +38,8 @@ int QRoundList::getStartIndex() const {
     return startIndex;
 }
 
-QPointF QRoundList::popBack(){
-    QPointF last = this->last();
+Point QRoundList::popBack(){
+    Point last = this->last();
     pop_back();
     return last;
 }

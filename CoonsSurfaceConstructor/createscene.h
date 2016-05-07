@@ -12,7 +12,7 @@
 #include "grahamTriangulation.h"
 #include <QVector>
 #include <QList>
-#include <QPointF>
+#include "definitions.h"
 
 enum MODE {
     ADD_POINTS,
@@ -20,10 +20,10 @@ enum MODE {
     CONVEX_HULL
 };
 
-class CreateScene: public QGLWidget {
-
+class CreateScene : public QGLWidget {
+    Q_OBJECT
 public:
-    CreateScene(QWidget *parent = 0);
+    explicit CreateScene(QWidget *parent = 0);
 
     void buildSimpleTriangular();
     void clear();
@@ -33,6 +33,8 @@ public:
     void convertToDelaunayTriangular();
     void generatePoints();
 
+    ~CreateScene();
+
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void initializeGL();
@@ -40,26 +42,54 @@ protected:
     void paintGL();
 
 private:
+    void setupViewport(int width, int height);
     void draw();
     void drawTriangular();
-    void drawEdges(QList<Edge> edges);
+    void drawEdges(QSet<Edge>& edges);
 
-    void drawPoints(QList<QPointF>);
+    void drawPoints(QVector<Point>&);
     void drawPoints();
 
-    ~CreateScene();
-
     MODE currentMode;
-    QPoint lastPos;
+    Point lastPos;
 
     const QColor usualPointColor;
     const QColor hullPointColor;
 
-    QVector<QPointF> points;
+    QVector<Point> points;
     DelaunayTriangulation triangulation;
     GrahamTriangulation grahamScan;
 
     static const int POINTS_NUMBER;
+    const float MIN_X;
+    const float MIN_Y;
+    const float MIN_Z;
+
+    const float MAX_X;
+    const float MAX_Y;
+    const float MAX_Z;
+
+    const int MAX_ROTATOR_VALUE;
+    const int ROTATOR_STEP;
+
+    int xRot;
+    int yRot;
+    int zRot;
+
+    Point& toOpenGLPoint(Point &p);
+    Point& addZCoordinate(Point &p);
+    void qNormalizeAngle(int &angle);
+public slots:
+    // slots for xyz-rotation slider
+    void setXRotation(int angle);
+    void setYRotation(int angle);
+    void setZRotation(int angle);
+
+signals:
+    // signaling rotation from mouse movement
+    void xRotationChanged(int angle);
+    void yRotationChanged(int angle);
+    void zRotationChanged(int angle);
 };
 
 #endif // CREATESCENE_H

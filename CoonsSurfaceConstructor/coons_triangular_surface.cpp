@@ -10,8 +10,8 @@ CoonsTriangularSurface::CoonsTriangularSurface(TriangularUnit& triangle) {
 // 2)
 
 
-QVector3D CoonsTriangularSurface::cartesianToBarycentric(QPointF& p) {
-    QVector3D barPoint;
+BarycenterPoint CoonsTriangularSurface::cartesianToBarycentric(Point& p) {
+    BarycenterPoint barPoint;
     double b1, b2, b3,
            x = p.x(), y = p.y(),
            x1 = V1.x(), y1 = V1.y(),
@@ -31,23 +31,24 @@ QVector3D CoonsTriangularSurface::cartesianToBarycentric(QPointF& p) {
     return barPoint;
 }
 
-QPointF CoonsTriangularSurface::barycentricToCartesian(QVector3D& p) {
+Point CoonsTriangularSurface::barycentricToCartesian(BarycenterPoint& p) {
     double b1 =  p.x(), b2 =  p.y(), b3 =  p.z();
-    x = V1.x() * b1 + V2.x() * b2 + V3.x() * b3;
-    y = V1.y() * b1 + V2.y() * b2 + V3.y() * b3;
-    return QPointF(x, y);
+    double x = V1.x() * b1 + V2.x() * b2 + V3.x() * b3;
+    double y = V1.y() * b1 + V2.y() * b2 + V3.y() * b3;
+    double z = V1.z() * b1 + V2.z() * b2 + V3.z() * b3;
+    return Point(x, y, z);
 }
 
-QVector3D CoonsTriangularSurface::negPoint(QVector3D& p) {
-    return QVector3D(1 - p.x(), 1 - p.y(), 1 - p.z());
+BarycenterPoint CoonsTriangularSurface::negPoint(BarycenterPoint& p) {
+    return BarycenterPoint(1 - p.x(), 1 - p.y(), 1 - p.z());
 }
 
-QVector<QVector3D> CoonsTriangularSurface::oppositePoints(QVector3D &p1) {
-    QVector3D opV1(0, p1.y() / (p1.y() + p1.z()),  p1.z() / (p1.y() + p1.z()));
-    QVector3D opV2(p1.x() / (p1.x() + p1.z()), 0, p1.z() / (p1.x() + p1.z()));
-    QVector3D opV3(p1.x() / (p1.y() + p1.x()), p1.y() / (p1.y() + p1.x()), 0);
+QVector<BarycenterPoint> CoonsTriangularSurface::oppositePoints(BarycenterPoint &p1) {
+    BarycenterPoint opV1(0, p1.y() / (p1.y() + p1.z()),  p1.z() / (p1.y() + p1.z()));
+    BarycenterPoint opV2(p1.x() / (p1.x() + p1.z()), 0, p1.z() / (p1.x() + p1.z()));
+    BarycenterPoint opV3(p1.x() / (p1.y() + p1.x()), p1.y() / (p1.y() + p1.x()), 0);
 
-    QVector<QVector3D> v;
+    QVector<BarycenterPoint> v;
     v.push_back(opV1);
     v.push_back(opV2);
     v.push_back(opV3);

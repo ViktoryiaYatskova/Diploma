@@ -2,13 +2,13 @@
 
 ConvexHull::ConvexHull() {}
 
-void ConvexHull::append(QPointF p) {
-    QVector<QPointF>::append(p);
+void ConvexHull::append(Point p) {
+    QVector<Point>::append(p);
     build();
 }
 
 void ConvexHull::build() {
-    QPointF centerPoint = getMinXPoint();
+    Point centerPoint = getMinXPoint();
 
     this->removeOne(centerPoint);
     this->prepend(centerPoint);
@@ -17,10 +17,10 @@ void ConvexHull::build() {
     sorted = true;
 }
 
-QPointF ConvexHull::getMinXPoint() {
-    double minX = 100000;
-    QPointF resPoint;
-    QVector<QPointF>::iterator i;
+Point ConvexHull::getMinXPoint() {
+    float minX = 100000;
+    Point resPoint;
+    QVector<Point>::iterator i;
     for (i = begin(); i != end(); ++i) {
         minX = std::min(i->x(), minX);
         if(i->x() == minX) {
@@ -32,19 +32,19 @@ QPointF ConvexHull::getMinXPoint() {
     return resPoint;
 }
 
-QPointF& ConvexHull::xAt(int index) {
-    return QVector<QPointF>::operator [](index);
+Point& ConvexHull::xAt(int index) {
+    return QVector<Point>::operator [](index);
 }
 
 void ConvexHull::sortPointsByAngle(){
-    QPointF centerPoint = this->at(0);
+    Point centerPoint = this->at(0);
     for (int i = length() - 1; i >= 1; i--) {
         for (int j = 1; j < i; j++) {
             double angle1 = getAngleTgBetweenPoints(xAt(j), centerPoint),
                    angle2 = getAngleTgBetweenPoints(xAt(i), centerPoint);
 
             if (angle1 > angle2) {
-                QPointF tmp = xAt(i);
+                Point tmp = xAt(i);
                 xAt(i)= xAt(j);
                 xAt(j) = tmp;
             }
@@ -53,18 +53,18 @@ void ConvexHull::sortPointsByAngle(){
      sorted = true;
 }
 
-double ConvexHull::getAngleTgBetweenPoints(QPointF point, QPointF centerPoint){
+double ConvexHull::getAngleTgBetweenPoints(Point point, Point centerPoint){
     return (centerPoint.y() - point.y())*1.0/(centerPoint.x() - point.x());
 }
 
-bool ConvexHull::isLeftTurn(QPointF c, QPointF a, QPointF b){
-    QPointF u(b.x() - a.x(), b.y() - a.y()),
-           v(c.x() - a.x(), c.y() - a.y());
+bool ConvexHull::isLeftTurn(Point c, Point a, Point b){
+    Point u(b.x() - a.x(), b.y() - a.y(), 0),
+          v(c.x() - a.x(), c.y() - a.y(), 0);
     return u.x()*v.y() - u.y()*v.x() >= 0;
 }
 
 
 void ConvexHull::clear(){
-    QVector<QPointF>::clear();
+    QVector<Point>::clear();
     sorted = false;
 }

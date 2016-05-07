@@ -2,41 +2,41 @@
 #define EDGE_H
 
 #include <QSet>
-#include <QPointF>
+#include "definitions.h"
 
 class Edge {
 
 private:
-    QPointF point1;
-    QPointF point2;
+    Point point1;
+    Point point2;
 
 public:
     static int dimension;
 
     Edge();
     Edge(const Edge&);
-    Edge(const QPointF &p1, const QPointF &p2);
+    Edge(const Point &p1, const Point &p2);
 
-    QPointF getStartPoint() const;
-    void setStartPoint(const QPointF &value);
+    Point getStartPoint() const;
+    void setStartPoint(const Point &value);
 
-    QPointF getEndPoint() const;
-    void setEndPoint(const QPointF &value);
+    Point getEndPoint() const;
+    void setEndPoint(const Point &value);
 
     bool operator==(const Edge &other) const;
     bool operator!=(const Edge &other) const;
     bool areConnected(const Edge &other);
-    double distantToPoint(QPointF& p);
-    QPointF getMutualPoint(const Edge &other) const;
+    double distantToPoint(Point& p);
+    Point getMutualPoint(const Edge &other) const;
 };
 
-inline uint qHash (const QPointF & key){
+inline uint qHash (const Point & key){
     return qHash (key.x () + 0x9e3779b9 + key.y () );
 }
 
 inline uint qHash(const Edge& edge) {
     uint seed = 0;
-    QPointF p1, p2;
+    Point p1, p2;
 
     if (edge.getStartPoint().x() < edge.getEndPoint().x() ||
         (edge.getStartPoint().x() == edge.getEndPoint().x() &&

@@ -4,15 +4,15 @@
 
 GrahamTriangulation::GrahamTriangulation():isBuilt(false), sorted(false){}
 
-QList<QPointF> GrahamTriangulation::getPoints() const{
+QList<Point> GrahamTriangulation::getPoints() const{
     return points;
 }
 
-void GrahamTriangulation::setPoints(const QList<QPointF>& value) {
-    points = QList<QPointF>(value);
+void GrahamTriangulation::setPoints(const QList<Point>& value) {
+    points = QList<Point>(value);
 }
 
-void GrahamTriangulation::addPoints(QPointF point) {
+void GrahamTriangulation::addPoints(Point point) {
     points.append(point);
 }
 
@@ -24,24 +24,26 @@ QList<Edge> GrahamTriangulation::getEdgesPreOrder(){
     QList<Edge> edges;
     if(points.length() < 1) return edges;
 
-    QPointF prevPoint = points.at(0);
+    Point prevPoint = points.at(0);
     Edge newEdge;
 
     for(int i = 1; i < points.length(); i++){
-        QPointF point = points.at(i);
+        Point point = points.at(i);
 
-        newEdge = Edge(QPointF(floor(prevPoint.x()+0.5), floor(prevPoint.y()+0.5)),
-                       QPointF(floor(point.x()+0.5), floor(point.y()+0.5)));
+        newEdge = Edge(Point(floor(prevPoint.x()+0.5), floor(prevPoint.y()+0.5), floor(prevPoint.z()+0.5)),
+                       Point(floor(point.x()+0.5), floor(point.y()+0.5), floor(point.z()+0.5)));
 
         edges.append(newEdge);
     }
 
     for(int i = 1; i < points.length(); i++) {
-        QPointF point = points.at(i);
-        QPointF prevPoint = points.at(i-1);
+        Point point = points.at(i);
+        Point prevPoint = points.at(i-1);
 
-        newEdge = Edge(QPointF(floor(prevPoint.x() + 0.5),floor(prevPoint.y()+0.5)),
-                       QPointF(floor(point.x() + 0.5), floor(point.y()+0.5)));
+        newEdge = Edge(
+                          Point(floor(prevPoint.x() + 0.5),floor(prevPoint.y()+0.5), floor(prevPoint.z()+0.5)),
+                          Point(floor(point.x() + 0.5), floor(point.y()+0.5), floor(point.z()+0.5))
+                      );
 
         edges.append(newEdge);
     }
@@ -58,7 +60,7 @@ bool GrahamTriangulation::isSorted() {
 }
 
 void GrahamTriangulation::prebuild() {
-    QPointF centerPoint = getMinXPoint();
+    Point centerPoint = getMinXPoint();
 
     points.removeOne(centerPoint);
     points.prepend(centerPoint);
@@ -70,7 +72,7 @@ void GrahamTriangulation::prebuild() {
 void GrahamTriangulation::build(){
     QRoundList stackPoints;
     QRoundList roundPointsList(points);
-    QPointF centerPoint = points[0];
+    Point centerPoint = points[0];
 
     for(int j = 1; j < points.length(); j++) {
        // appendEdge(centerPoint, points[i]);
@@ -86,8 +88,8 @@ void GrahamTriangulation::build(){
     appendEdge(stackPoints.at(1), stackPoints.at(2));
 
     int i = 2;
-    QPointF prevVertex = roundPointsList.get(i++);
-    QPointF curVertex = roundPointsList.get(i);
+    Point prevVertex = roundPointsList.get(i++);
+    Point curVertex = roundPointsList.get(i);
 
     while( curVertex != centerPoint ){
 
@@ -116,16 +118,16 @@ void GrahamTriangulation::build(){
     isBuilt = true;
 }
 
-void GrahamTriangulation::appendEdge(QPointF p1, QPointF p2){
-    Edge newEdge = Edge(QPointF(floor(p1.x()+0.5), floor(p1.y()+0.5)),
-                   QPointF(floor(p2.x()+0.5), floor(p2.y()+0.5)));
+void GrahamTriangulation::appendEdge(Point p1, Point p2){
+    Edge newEdge = Edge(Point(floor(p1.x()+0.5), floor(p1.y()+0.5), floor(p1.z()+0.5)),
+                        Point(floor(p2.x()+0.5), floor(p2.y()+0.5), floor(p2.z()+0.5)));
     edges.append(newEdge);
 }
 
-QPointF GrahamTriangulation::getMinXPoint() {
-    double minX = 100000;
-    QPointF resPoint;
-    QList<QPointF>::iterator i;
+Point GrahamTriangulation::getMinXPoint() {
+    float minX = 100000;
+    Point resPoint;
+    QList<Point>::iterator i;
     for (i = points.begin(); i != points.end(); ++i) {
         minX = std::min(i->x(), minX);
         if(i->x() == minX) {
@@ -138,14 +140,14 @@ QPointF GrahamTriangulation::getMinXPoint() {
 }
 
 void GrahamTriangulation::sortPointsByAngle(){
-    QPointF centerPoint = points[0];
+    Point centerPoint = points[0];
     for (int i = points.length() - 1; i >= 1; i--) {
         for (int j = 1; j < i; j++) {
             double angle1 = getAngleTgBetweenPoints(points[j], centerPoint),
                    angle2 = getAngleTgBetweenPoints(points[j+1], centerPoint);
 
             if (angle1 < angle2) {
-                QPointF tmp = points[j];
+                Point tmp = points[j];
                 points[j] = points[j+1];
                 points[j+1] = tmp;
             }
@@ -154,21 +156,21 @@ void GrahamTriangulation::sortPointsByAngle(){
     sorted = true;
 }
 
-double GrahamTriangulation::getAngleTgBetweenPoints(QPointF point, QPointF centerPoint){
+double GrahamTriangulation::getAngleTgBetweenPoints(Point point, Point centerPoint){
     return (point.y() - centerPoint.y())*1.0/(point.x() - centerPoint.x());
 }
 
-bool GrahamTriangulation::isLeftTurn(QPointF c, QPointF a, QPointF b){
-    QPointF u(b.x() - a.x(), b.y() - a.y()),
-           v(c.x() - a.x(), c.y() - a.y());
+bool GrahamTriangulation::isLeftTurn(Point c, Point a, Point b){
+    Point u(b.x() - a.x(), b.y() - a.y(), 0),
+          v(c.x() - a.x(), c.y() - a.y(), 0);
     return u.x()*v.y() - u.y()*v.x() >= 0;
 }
 
-QList<QPointF> GrahamTriangulation::getHull() const{
+QList<Point> GrahamTriangulation::getHull() const{
     return hull;
 }
 
-void GrahamTriangulation::setHull(const QList<QPointF> &value){
+void GrahamTriangulation::setHull(const QList<Point> &value){
     hull = value;
 }
 

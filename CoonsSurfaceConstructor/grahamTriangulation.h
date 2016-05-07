@@ -12,23 +12,23 @@ class GrahamTriangulation
 {
 public:
     GrahamTriangulation();
-    QList<QPointF> getPoints() const;
-    void setPoints(const QList<QPointF>&);
-    void addPoints(QPointF);
+    QList<Point> getPoints() const;
+    void setPoints(const QList<Point>&);
+    void addPoints(Point);
     int size();
     void build();
     void prebuild();
-    QPointF getMinXPoint();
+    Point getMinXPoint();
     void sortPointsByAngle();
-    double getAngleTgBetweenPoints(QPointF, QPointF);
+    double getAngleTgBetweenPoints(Point, Point);
     QList<Edge> getEdgesPreOrder();
     bool isBuilted();
     bool isSorted();
 
-    static bool isLeftTurn(QPointF, QPointF, QPointF);
+    static bool isLeftTurn(Point, Point, Point);
 
-    QList<QPointF> getHull() const;
-    void setHull(const QList<QPointF> &value);
+    QList<Point> getHull() const;
+    void setHull(const QList<Point> &value);
 
     void clear();
 
@@ -36,14 +36,14 @@ public:
     void setEdges(const QList<Edge> &value);
 
 private:
-    QList<QPointF> points;
-    QList<QPointF> hull;
+    QList<Point> points;
+    QList<Point> hull;
     QList<Edge> edges;
 
     bool isBuilt;
     bool sorted;
 
-    void appendEdge(QPointF p1, QPointF p2);
+    void appendEdge(Point p1, Point p2);
 };
 
 #endif // GRAHAMSCAN_H

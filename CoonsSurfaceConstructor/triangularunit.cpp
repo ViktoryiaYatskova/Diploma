@@ -12,14 +12,14 @@ TriangularUnit::
 TriangularUnit::
     TriangularUnit(const TriangularUnit &triangle) {
 
-    vertexes = QVector<QPointF>(triangle.getVertexes());
+    vertexes = QVector<Point>(triangle.getVertexes());
     edges = QSet<Edge>(triangle.edges);
     isEmpty = triangle.isEmpty;
     isRestructered = triangle.isRestructered;
 }
 
 TriangularUnit::
-    TriangularUnit(QPointF* trVertexes): isRestructered(false) {
+    TriangularUnit(Point* trVertexes): isRestructered(false) {
 
     addPoints(trVertexes[0], trVertexes[1], trVertexes[2]);
 
@@ -31,7 +31,7 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(const QPointF p1, const QPointF p2, const QPointF p3): isRestructered(false) {
+    TriangularUnit(const Point p1, const Point p2, const Point p3): isRestructered(false) {
 
     addPoints(p1, p2, p3);
 
@@ -42,11 +42,11 @@ TriangularUnit::
     isEmpty = false;
 }
 
-QVector<QPointF> TriangularUnit::getVertexes() const {
+QVector<Point> TriangularUnit::getVertexes() const {
     return vertexes;
 }
 
-void TriangularUnit::setVertexes(const QVector<QPointF> &value) {
+void TriangularUnit::setVertexes(const QVector<Point> &value) {
     vertexes = value;
 }
 
@@ -59,7 +59,7 @@ void TriangularUnit::setIsRestructered(bool value)
 {
     isRestructered = value;
 }
-void TriangularUnit::addPoints(const QPointF p1, const QPointF p2, const QPointF p3) {
+void TriangularUnit::addPoints(const Point p1, const Point p2, const Point p3) {
     int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
     if (p > 0) {
         vertexes.append(p1);
@@ -78,12 +78,12 @@ TriangularUnit::TriangularUnit(const Edge &edge1, const Edge &edge2, const Edge 
     edges.insert(edge3);
 
     QSetIterator<Edge> it(edges);
-    QVector<QPointF> tmpVertexes;
+    QVector<Point> tmpVertexes;
 
     while (it.hasNext()) {
         Edge edge = it.next();
 
-        QPointF p = edge.getStartPoint();
+        Point p = edge.getStartPoint();
         if (!tmpVertexes.contains(p)) {
             tmpVertexes.append(p);
         }
@@ -98,7 +98,7 @@ TriangularUnit::TriangularUnit(const Edge &edge1, const Edge &edge2, const Edge 
 }
 
 TriangularUnit::
-    TriangularUnit(const Edge &edge, const QPointF point) {
+    TriangularUnit(const Edge &edge, const Point point) {
 
     edges.insert(edge);
     edges.insert(Edge(point, edge.getStartPoint()));
@@ -115,26 +115,26 @@ TriangularUnit::
     edges.insert(edge1);
     edges.insert(edge2);
 
-    QPointF p1 = edge1.getMutualPoint(edge2);
-    QPointF p2 = edge1.getStartPoint() == p1 ? edge1.getEndPoint(): edge1.getStartPoint();
-    QPointF p3 = edge2.getStartPoint() == p1 ? edge2.getEndPoint(): edge2.getStartPoint();
+    Point p1 = edge1.getMutualPoint(edge2);
+    Point p2 = edge1.getStartPoint() == p1 ? edge1.getEndPoint(): edge1.getStartPoint();
+    Point p3 = edge2.getStartPoint() == p1 ? edge2.getEndPoint(): edge2.getStartPoint();
     addPoints(p1, p2, p3);
     edges.insert(Edge(p2, p3));
 
     isEmpty = false;
 }
 
-QPointF TriangularUnit::getNotAdjacentPoint(TriangularUnit &adjacentTriangular) {
+Point TriangularUnit::getNotAdjacentPoint(TriangularUnit &adjacentTriangular) {
 
-    QVector<QPointF> adjacentTriangularPoints = adjacentTriangular.getVertexes();
+    QVector<Point> adjacentTriangularPoints = adjacentTriangular.getVertexes();
 
     for (int i = 0; i < adjacentTriangularPoints.length(); i++) {
-        QPointF p = adjacentTriangularPoints.at(i);
+        Point p = adjacentTriangularPoints.at(i);
         if (!vertexes.contains(p)) {
             return p;
         }
     }
-    return QPointF();
+    return Point();
 }
 
 bool TriangularUnit::
@@ -166,7 +166,7 @@ Edge TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(QPointF* trVertexes, TriangularUnit* triangulars) {
+    TriangularUnit(Point* trVertexes, TriangularUnit* triangulars) {
 
     for (int i = 0; i < 3; i++) {
         neighborTriangulars.append(triangulars[i]);
@@ -179,7 +179,7 @@ TriangularUnit::
     isEmpty = false;
 }
 
-QPointF TriangularUnit::
+Point TriangularUnit::
     getEscribedCircleCenter() {
 
     if (escribedCircleCenter.isNull()) {
@@ -237,14 +237,14 @@ QPointF TriangularUnit::
 }
 
 bool TriangularUnit::
-    isPointInsideTriangle(QPointF point) {
+    isPointInsideTriangle(Point point) {
 
     return ExMath::pointPositionToTriangle(vertexes[0], vertexes[1], vertexes[2], point) == INSIDE;
-    //QPointF center = getEscribedCircleCenter();
+    //Point center = getEscribedCircleCenter();
     //return pow(point.x() - center.x(), 2) + pow(point.y() - center.y(), 2) >= pow(escribedCircleRadius, 2);
 }
 
-QPointF TriangularUnit::
+Point TriangularUnit::
     getInscribedCircleCenter() {
 
     if (inscribedCircleCenter.isNull()) {
@@ -293,7 +293,7 @@ bool TriangularUnit::
 }
 
 Edge TriangularUnit::
-    getTriangleEdgeThatContainsPoint(QPointF &point) {
+    getTriangleEdgeThatContainsPoint(Point &point) {
 
     QSetIterator< Edge > it( edges );
     while (it.hasNext()) {
@@ -303,7 +303,8 @@ Edge TriangularUnit::
         }
     }
 
-    throw std::exception(); //"No edge that contains point"
+    ExMath::consoleLog("No edge that contains point");
+    throw std::exception();
 }
 
 QSet<Edge>& TriangularUnit::
@@ -312,7 +313,7 @@ QSet<Edge>& TriangularUnit::
     return edges;
 }
 
-QPointF TriangularUnit::
+Point TriangularUnit::
     getFrontPointToEdge(Edge& edge) {
 
     for (int i = 0; i < vertexes.length(); i++) {
@@ -325,15 +326,15 @@ QPointF TriangularUnit::
     throw std::exception();
 }
 
-QPointF& TriangularUnit::
-    getClosestVertexToPoint(const QPointF& point) {
+Point& TriangularUnit::
+    getClosestVertexToPoint(const Point& point) {
 
     double closestDistantToPoint = ExMath::DOUBLE_MAX;
-    QPointF closestVertex;
+    Point closestVertex;
 
-    QVectorIterator< QPointF > it( vertexes );
+    QVectorIterator< Point > it( vertexes );
     while (it.hasNext()) {
-        QPointF vertex = it.next();
+        Point vertex = it.next();
         // as a sum of the distances to the bound vertexes of the edge
         double distantToPoint = ExMath::distantBeetweenPoints(vertex, point);
 
@@ -348,7 +349,7 @@ QPointF& TriangularUnit::
 }
 
 Edge& TriangularUnit::
-    getClosestEdgeToPoint(const QPointF& point) {
+    getClosestEdgeToPoint(const Point& point) {
 
     double closestDistantToEdge = ExMath::DOUBLE_MAX;
     Edge closestEdge;

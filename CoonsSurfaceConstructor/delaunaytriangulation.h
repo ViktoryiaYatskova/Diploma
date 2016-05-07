@@ -6,7 +6,7 @@
 #include <QVector>
 #include <QSet>
 #include <QVectorIterator>
-#include <QPointF>
+#include "definitions.h"
 #include "triangularunit.h"
 #include "convexhull.h"
 #include "edge.h"
@@ -15,21 +15,21 @@ class DelaunayTriangulation {
 
 public:
     DelaunayTriangulation();
-    DelaunayTriangulation(QVector<QPointF>&);
+    DelaunayTriangulation(QVector<Point>&);
     DelaunayTriangulation(QVector<TriangularUnit>&);
     QSet<Edge> getEdges() const;
-    QSet<Edge> findEdgesIncidentToPoint(QPointF p);
+    QSet<Edge> findEdgesIncidentToPoint(Point p);
 
     void build(bool);
     void clear();
-    void setPoints(const QVector<QPointF> &value);
+    void setPoints(const QVector<Point> &value);
 
-    QVector<QPointF> inscribedCircleCenters;
-    TriangularUnit definePointPositionToTriangulation(QPointF &point);
+    QVector<Point> inscribedCircleCenters;
+    TriangularUnit definePointPositionToTriangulation(Point &point);
 
-    bool crossPointIncidentEdge(Edge edge, QPointF p);
+    bool crossPointIncidentEdge(Edge edge, Point p);
     QVector<int> getTriangularUnitNeighbors(TriangularUnit &triangular);
-    static bool arePointsSeparatedByEdge(QPointF &p1, QPointF &p2, Edge &edge);
+    static bool arePointsSeparatedByEdge(Point &p1, Point &p2, Edge &edge);
 
     void setConvexHull(const ConvexHull &value);
 
@@ -38,29 +38,29 @@ public:
     void convertToDelaunay();
 
 private:
-    QVector<QPointF> points;
+    QVector<Point> points;
     QVector<TriangularUnit> triangles;
     QSet<Edge> edges;
     ConvexHull convexHull;
 
-    TriangularUnit getClosestTriangleToPoint(QPointF&);
-    Edge& getClosestConvexEdgeToPoint(QPointF&);
+    TriangularUnit getClosestTriangleToPoint(Point&);
+    Edge& getClosestConvexEdgeToPoint(Point&);
 
-    static int definePointPositionToTriangle(QPointF& pointToAdd, TriangularUnit& nearestTriangle);
+    static int definePointPositionToTriangle(Point& pointToAdd, TriangularUnit& nearestTriangle);
 
     bool checkDelaunayConditionLocaly(QVector<TriangularUnit>& threeNewTriangles);
 
-    void createFirstTriangle(QPointF point1, QPointF point2, QPointF point3);
-    QVector<TriangularUnit> replaceTriangleWithThreeSplittedParts(TriangularUnit& triangle, QPointF& point);
-    QVector<TriangularUnit> replaceTriangleWithTwoSplittedParts(TriangularUnit& triangle, QPointF& point);
-    QVector<TriangularUnit> createNewBoundaryTriangles(QPointF &outerPoint);
+    void createFirstTriangle(Point point1, Point point2, Point point3);
+    QVector<TriangularUnit> replaceTriangleWithThreeSplittedParts(TriangularUnit& triangle, Point& point);
+    QVector<TriangularUnit> replaceTriangleWithTwoSplittedParts(TriangularUnit& triangle, Point& point);
+    QVector<TriangularUnit> createNewBoundaryTriangles(Point &outerPoint);
 
     void appendTriangles(QVector<TriangularUnit>& newTriangles);
     void appendTriangles(TriangularUnit& triangle);
     void appendEdges(QSet<Edge> &newEdges);
     void removeEdges(QSet<Edge> &newEdges);
 
-    QVector<TriangularUnit> addPointToTriangulation(QPointF);
+    QVector<TriangularUnit> addPointToTriangulation(Point);
 };
 
 #endif // DELAUNAYTRIANGULATION_H

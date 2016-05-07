@@ -1,23 +1,23 @@
 #ifndef CONVEXHULL_H
 #define CONVEXHULL_H
 
-#include <QPointF>
+#include "definitions.h"
 #include <QVector>
 
-class ConvexHull: public QVector<QPointF>
+class ConvexHull: public QVector<Point>
 {
 public:
     ConvexHull();
-    QPointF getMinXPoint();
+    Point getMinXPoint();
     void sortPointsByAngle();
-    double getAngleTgBetweenPoints(QPointF, QPointF);
+    double getAngleTgBetweenPoints(Point, Point);
     bool sorted;
     void build();
-    void append(QPointF p);
-    QPointF& operator [](int index);
+    void append(Point p);
+    Point& operator [](int index);
     void clear();
-    bool isLeftTurn(QPointF c, QPointF a, QPointF b);
-    QPointF &xAt(int index);
+    bool isLeftTurn(Point c, Point a, Point b);
+    Point &xAt(int index);
 };
 
 #endif // CONVEXHULL_H

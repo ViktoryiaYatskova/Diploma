@@ -2,23 +2,25 @@
 #define COONSTRIANGULARSURFACE_H
 
 #include <triangularunit.h>
-#include <QVector3D>
 #include <QVector>
-#include <QPointF>
+#include "definitions.h"
+
+typedef QVector3D BarycenterPoint;
 
 class CoonsTriangularSurface {
+
 private:
-    QPointF V1;
-    QPointF V2;
-    QPointF V3;
+    Point V1;
+    Point V2;
+    Point V3;
 
 public:
     CoonsTriangularSurface(TriangularUnit&);
 
-    QVector3D cartesianToBarycentric(QPointF& p);
-    QPointF barycentricToCartesian(QVector3D& p);
-    QVector3D negPoint(QVector3D& p);
-    QVector<QVector3D> oppositePoints(QVector3D&);
+    BarycenterPoint cartesianToBarycentric(Point& p);
+    Point barycentricToCartesian(BarycenterPoint& p);
+    BarycenterPoint negPoint(BarycenterPoint& p);
+    QVector<BarycenterPoint> oppositePoints(BarycenterPoint&);
 };
 
 #endif // COONSTRIANGULARSURFACE_H
