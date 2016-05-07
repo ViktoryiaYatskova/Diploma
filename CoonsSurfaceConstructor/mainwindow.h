@@ -18,6 +18,14 @@ public:
 private slots:
     void on_pushButton_clicked();
 
+    void on_clearButton_clicked();
+
+    void on_convertToDelaunayTriangular_clicked();
+
+    void on_convexHull_clicked();
+
+    void on_generatePoints_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

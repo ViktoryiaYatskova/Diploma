@@ -1,70 +1,77 @@
 #include "edge.h"
-
-int Edge::dimension = Point2D::DIMENSION;
-
-Edge::Edge(const Point2D& p1, const Point2D& p2):point1(p1), point2(p2) {}
+#include "exMath.h"
 
 Edge::Edge() {}
 
-Vector <Edge>& Edge::createAllPossibleEdgesThatNotCrossOthers(Vector < Point2D >& points, QVector <Edge>& edgesNotToCross) {
-    Vector <Edge> edges;
+Edge::
+    Edge(const Edge& other):
+        point1(other.point1),
+        point2(other.point2) {}
 
-    for(int i = 0; i < points.length(); i++) {
-        Point2D currentPoint = points.at(i);
+Edge::
+    Edge(const Point &p1, const Point &p2){
 
-        for(int j = 0; j < points.length(); j++) {
-            if (i == j) continue;
-
-            Point2D anotherPoint = points.at(j);
-            Edge newEdge(currentPoint, anotherPoint);
-
-            if (!newEdge.isCrossedBySomeEdge(edgesNotToCross)) {
-                edges.append(newEdge);
-            }
-        }
-    }
-    return edges;
+    point1 = p1;
+    point2 = p2;
 }
 
-bool Edge::isCrossedBySomeEdge(Vector <Edge>& edges) {
-    for (int i = 0; i < edges.length(); i++) {
-        if (this->isCrossedByEdge(edges[i])) {
-            return true;
-        }
-    }
-    return false;
+Point Edge::
+    getStartPoint() const {
+
+    return point1;
 }
 
-bool Edge::isCrossedByEdge(Edge& edge) {
+void Edge::
+    setStartPoint(const Point &value) {
 
-    float x1 = edge.point1.x(), x2 = edge.point2.x(),
-            x3 = this->point1.x(), x4 = this->point2.x(),
+    point1 = value;
+}
 
-          y1 = edge.point1.y(), y2 = edge.point2.y(),
-            y3 = this->point1.y(), y4 = this->point2.y();
+Point Edge::getEndPoint() const {
+    return point2;
+}
 
-    double** A = new double*[dimension];
-    A[0] = new double[dimension];
-    A[1] = new double[dimension];
+void Edge::setEndPoint(const Point &value) {
+    point1 = value;
+}
 
-    A[0][0] = x1 - x2; A[0][1] = x3 - x4;
-    A[1][0] = y1 - y2; A[1][1] = y3 - y4;
+bool Edge::operator==(const Edge &other) const {
+    return other.getEndPoint() == getEndPoint() && other.getStartPoint() == getStartPoint() ||
+           other.getStartPoint() == getEndPoint() && other.getEndPoint() == getStartPoint();
+}
 
-    double* b = new double[dimension];
-    b[0] = x3 - x2;
-    b[1] = y3 - y2;
+bool Edge::operator!=(const Edge &other) const {
+    return !operator ==(other);
+}
 
-    double* x = ExMath.solveMatrixEquantion(A, b, dimension);
-    bool areCrossed = 0 <= x[0] && x[0] <= 1 &&
-                      0 <= x[1] && x[1] <= 1;
+bool Edge::areConnected(const Edge& other) {
+    return other.getEndPoint() == getEndPoint() || other.getStartPoint() == getStartPoint() ||
+            other.getStartPoint() == getEndPoint() || other.getEndPoint() == getStartPoint();
+}
 
-    for (int i = 0; i < 2; i++) {
-        delete[] A[i];
+Point Edge::getMutualPoint(const Edge& other) const {
+    if( other.getEndPoint() == getEndPoint() || other.getEndPoint() == getStartPoint() )
+        return other.getEndPoint();
+
+    return other.getStartPoint();
+}
+
+double Edge::distantToPoint(Point &p) {
+    double distToPoint1 = ExMath::distantBeetweenPoints(p, point1);
+    double distToPoint2 = ExMath::distantBeetweenPoints(p, point2);
+    double distToEdgeLine = ExMath::distantToLine(p, point1, point2);
+    bool isClosestPointEdgeVertex = !ExMath::isPointProjectionOnSegment(p, point1, point2);
+
+    if (isClosestPointEdgeVertex) {
+        return std::min(distToPoint1, distToPoint2);
     }
 
-    delete[] A;
-    delete[] b;
-    delete[] x;
+    return distToEdgeLine;
+}
 
-    return areCrossed;
+inline bool operator==(const Edge& ed1, const Edge& ed2){
+     return (ed1.getEndPoint() == ed2.getEndPoint() &&
+             ed1.getStartPoint() == ed2.getStartPoint() ||
+             ed1.getEndPoint() == ed2.getStartPoint() &&
+             ed1.getStartPoint() == ed2.getEndPoint());
 }

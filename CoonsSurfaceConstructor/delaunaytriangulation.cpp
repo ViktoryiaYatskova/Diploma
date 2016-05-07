@@ -1,219 +1,483 @@
 #include "delaunaytriangulation.h"
+#include "point_position_to_triangle.h"
+#include <iostream>
 
 DelaunayTriangulation::
     DelaunayTriangulation(){}
 
 DelaunayTriangulation::
-    DelaunayTriangulation(Vector < Point2D >& trs): points(trs) {}
+    DelaunayTriangulation(QVector<Point> &trs): points(trs) {}
 
 DelaunayTriangulation::
-    DelaunayTriangulation(Vector < TriangularUnit >& trs): triangles(trs){}
+    DelaunayTriangulation(QVector<TriangularUnit> &trs): triangles(trs){}
 
-DelaunayTriangulation::
-    DelaunayTriangulation(Point2D* triangularPoints, int length) {
 
-    points = Vector < Point2D >(triangularPoints, length);
+void DelaunayTriangulation::
+    createFirstTriangle(Point point1, Point point2, Point point3) {
+
+    TriangularUnit firstTriangle(point1, point2, point3);
+    QVector<Point> vertexes = firstTriangle.getVertexes();
+    point1 = vertexes.at(0);
+    point2 = vertexes.at(1);
+    point3 = vertexes.at(2);
+
+    appendTriangles(firstTriangle);
+    convexHull.append(point1);
+    convexHull.append(point2);
+    convexHull.append(point3);
 }
 
-/*Алгоритм Киркпатрика
-Данный алгоритм основан на стандартной для многих алгоритмов методике сведения сложной задачи к более простым,
-в которых решение очевидно. Сам алгоритм для N > 5 состоит из 3 шагов:
+QVector<TriangularUnit> DelaunayTriangulation::
+    addPointToTriangulation(Point pointToAdd) {
 
-1. Разбиение исходного множества на более мелкие множества.
- Для этого мы проводим вертикальные или горизонтальные прямые в середине множества и
- уже относительно этих прямых разделяем точки на две части примерно по N/2.
- После для каждой группы точек рекурсивно запускаем процесс деления в зависимости от их количества:
-    1. Если число точек N > 12, то делим множество с помощью прямых.
-    2. Если число точек N ≤ 12, то делим множество на 3 и N − 3 точек.
-    3. Если число точек N = 8, то делим множество на 2 группы по 4 точки.
-Деление продолжается до тех пор, пока не останется 3 или 4 точки.
+    QVector<TriangularUnit> newTriangles;
 
-2. Построение триангуляции для множеств из 3 или 4 точек.
-Для трёх точек триангуляция очевидна — просто соединяем попарно точки отрезками.
-Для четырёх точек возможны два варианта:
-    1. Если точки образуют невыпуклый четырёхугольник, то просто соединяем все 4 точки отрезками.
-    2. Если точки образуют выпуклый четырёхугольник, то берём любые 3 точки и
- проверяем положение четвёртой точки относительно окружности,
- описанной вокруг первых трёх точек. Здесь возможны три варианта:
-        1. Точка лежит за пределами окружности. Данная триангуляция оптимальна,
-         строим треугольник из первых трёх точек и соединяем с четвёртой ближайшие к ней 2 точки.
-        2. Точка лежит внутри окружности. В этом случае нарушается условие триангуляции Делоне,
-        и отрезками соединяются четвёртая точка со всеми остальными точками, а также те точки,
-        отрезки между которыми не создадут пересечений с уже проведёнными отрезками.
-        3. Точка лежит на окружности. В этом случае любая триангуляция оптимальна.
+    TriangularUnit nearestTriangle = getClosestTriangleToPoint(pointToAdd);
+    int positionToTriangle = definePointPositionToTriangle(pointToAdd, nearestTriangle);
 
-3. Объединение оптимальных триангуляций. Сначала находятся две пары точек,
-отрезки которых образуют в совокупности с построенными триангуляциями выпуклую фигуру.
-Они соединяются отрезками, и один из полученных отрезков выбирается как начало для последующего обхода.
- Обход заключается в следующем: на этом отрезке мы как будто «надуваем пузырь» внутрь до первой точки,
- которую достигнет раздувающаяся окружность «пузыря». С найденной точкой соединяется та точка отрезка,
- которая не была с ней соединена. Полученный отрезок проверяется на пересечение с уже существующими отрезками триангуляции,
- и в случае пересечения они удаляются из триангуляции. После этого новый отрезок принимается за начало для нового «пузыря».
- Цикл повторяется до тех пор, пока начало не совпадёт со вторым отрезком выпуклой оболочки.
-*/
-DelaunayTriangulation& DelaunayTriangulation::
-    build (DelaunayTriangulation& trianqular) {
+    if (positionToTriangle == INSIDE) {
 
-    Vector < Point2D > points = trianqular.points;
-    Vector < TriangularUnit > triangles = trianqular.triangles;
-    DelaunayTriangulation *trianqular1, *trianqular2;
-    TriangularUnit* triangle;
+        ExMath::consoleLog("POINT_POSITION_TO_TRIANGLE::INSIDE");
+        newTriangles = replaceTriangleWithThreeSplittedParts(nearestTriangle, pointToAdd);
 
-    int numberOfPoints = points.length();
+    } else if (positionToTriangle == ON_EDGE) {
 
-    switch(numberOfPoints) {
+        ExMath::consoleLog("POINT_POSITION_TO_TRIANGLE::ON_EDGE");
+        newTriangles = replaceTriangleWithTwoSplittedParts(nearestTriangle, pointToAdd);
 
-    case 1:
-    case 2:
-        throw std::logic_error("Two little points number");
+    } else { // relation == ExMath::POINT_POSITION_TO_TRIANGLE::OUTSIDE
 
-    case 3:
-        triangle = new TriangularUnit(points.data());
-        triangles.append(*triangle);
-        break;
+        ExMath::consoleLog("POINT_POSITION_TO_TRIANGLE::OUTSIDE");
+        newTriangles = createNewBoundaryTriangles(pointToAdd);
+    }
 
-    case 4:
-        if (isPolygonConvex(points.data())) {
-            triangularsFromConvexPolygon(points);
-            /*triangles.append(new TriangularUnit(points.mid(0, 2).data()));
-            triangles.append(new TriangularUnit(points.mid(1, 3).data()));*/
-        } else {
-            triangle = new TriangularUnit(points.mid(0, 2).data());
-            triangles.append(*triangle);
-            triangle = new TriangularUnit(points.mid(1, 3).data());
-            triangles.append(*triangle);
-            Point2D thirdTriangular[] = {
-                Point2D(points.at(0)),
-                Point2D(points.at(2)),
-                Point2D(points.at(3))
-            };
-            triangle = new TriangularUnit(thirdTriangular);
-            triangles.append(*triangle);
+    return newTriangles;
+}
+
+void DelaunayTriangulation::
+    convertToDelaunay() {
+
+    checkDelaunayConditionLocaly(triangles);
+}
+
+void DelaunayTriangulation::
+    build(bool isDelaunay) {
+    /**
+    1. Вначале производится локализация точки, т.е. находится треугольник (построен-
+    ный ранее), в который попадает очередная точка; либо, если точка не попадает внутрь
+    триангуляции, то находится треугольник на границе триангуляции, ближайший к очеред-
+    ной точке.
+    2. Если точка попала внутрь какого-нибудь треугольника, он разбивается на три но-
+    вых; иначе, при попадании точки вне триангуляции, строится один или более треугольни-
+    ков. Затем проводятся локальные проверки вновь полученных треугольников на соответ-
+    ствие условию Делоне.*/
+
+    QVectorIterator<Point> it(points);
+
+    while(it.hasNext()) {
+        Point pointToAdd = it.next();
+
+        // Zero step
+        if (pointToAdd == *points.begin()) {
+            createFirstTriangle(it.next(), it.next(), pointToAdd);
+            continue;
         }
-        break;
 
-    case 8:
-        trianqular1 = new DelaunayTriangulation(points.mid(0, 3).data(), 4);
-        trianqular2 = new DelaunayTriangulation(points.mid(3, 7).data(), 4);
-        build(*trianqular1);
-        build(*trianqular2);
-        return joinTriangulars(*trianqular1, *trianqular2);
-        break;
+        QVector<TriangularUnit> newTriangles = addPointToTriangulation(pointToAdd);
 
-    default:
-        if (numberOfPoints >= 12) {
-            int halfLength = ceil(numberOfPoints / 2.0);
-            trianqular1 = new DelaunayTriangulation(points.mid(0, halfLength).data(), halfLength);
-            trianqular2 = new DelaunayTriangulation(points.mid(halfLength + 1, numberOfPoints).data(), numberOfPoints - halfLength - 1);
-            build(*trianqular1);
-            build(*trianqular2);
-            return joinTriangulars(*trianqular1, *trianqular2);
-        } else {
-            trianqular1 = new DelaunayTriangulation(points.mid(0, 2).data(), 3);
-            trianqular2 = new DelaunayTriangulation(points.mid(3, numberOfPoints).data(), numberOfPoints - 3);
-            build(*trianqular1);
-            build(*trianqular2);
-            return joinTriangulars(*trianqular1, *trianqular2);
+        if (isDelaunay) {
+            checkDelaunayConditionLocaly(newTriangles);
         }
     }
-    return *(new DelaunayTriangulation(triangles));
 }
 
+QSet<Edge> DelaunayTriangulation::
+    getEdges() const {
 
-DelaunayTriangulation& DelaunayTriangulation::
-    joinTriangulars(DelaunayTriangulation& triangulation1, DelaunayTriangulation& triangulation2) {
+    return edges;
+}
 
-    return triangulation1;
+TriangularUnit DelaunayTriangulation::
+    getClosestTriangleToPoint(Point &point) {
+
+    double minDistantToTriangle = ExMath::DOUBLE_MAX;
+    TriangularUnit closestTriangular, currentTriangle;
+
+    QVectorIterator<TriangularUnit> it(triangles);
+
+    while(it.hasNext()) {
+        currentTriangle = it.next();
+        if (currentTriangle.isPointInsideTriangle(point)) {
+            ExMath::consoleLog("inside the triangle");
+            return currentTriangle;
+        }
+
+        Point inscribedCircleCenter = currentTriangle.getInscribedCircleCenter();
+        inscribedCircleCenters.append(inscribedCircleCenter);
+
+        double distantToPoint = ExMath::distantBeetweenPoints( inscribedCircleCenter, point );
+        minDistantToTriangle = std::min( minDistantToTriangle, distantToPoint );
+
+        if ( distantToPoint == minDistantToTriangle ) {
+            closestTriangular = currentTriangle;
+        }
+    }
+    return closestTriangular;
+}
+
+Edge &DelaunayTriangulation::
+    getClosestConvexEdgeToPoint(Point &p) {
+
+    double minDistantToPoint = ExMath::DOUBLE_MAX;
+    Edge closestEdge;
+
+    QVectorIterator<Point> it(convexHull);
+    Point prevPoint = it.next();
+
+    while(it.hasNext() || prevPoint == convexHull.last()) {
+        Point currentEdgeA = prevPoint;
+        Point currentEdgeB = it.hasNext()? it.next(): convexHull.first();
+        Edge currentEdge(currentEdgeA, currentEdgeB);
+
+        double distantToPoint = currentEdge.distantToPoint(p);
+        bool isRightTurn = ExMath::isRightTurn(currentEdgeB, p, currentEdgeA);
+
+        if ( isRightTurn ) {
+            if ( distantToPoint < minDistantToPoint ) {
+                minDistantToPoint = distantToPoint;
+                closestEdge = currentEdge;
+            }
+        }
+        prevPoint = currentEdgeB;
+    }
+    if (closestEdge.getEndPoint().isNull() && closestEdge.getStartPoint().isNull()) {
+        ExMath::consoleLog("Not found closest convex edge in right direction!");
+        throw std::exception();
+    }
+    return closestEdge;
+}
+
+int DelaunayTriangulation::
+    definePointPositionToTriangle(Point &point, TriangularUnit &triangle) {
+
+
+    QVector<Point> vertexes = triangle.getVertexes();
+    return ExMath::pointPositionToTriangle(vertexes.at(0), vertexes.at(1), vertexes.at(2), point);
+}
+
+TriangularUnit DelaunayTriangulation::
+    definePointPositionToTriangulation(Point &point) {
+
+    TriangularUnit emptyTriangle;
+    TriangularUnit closestTriangle = getClosestTriangleToPoint(point);
+    //while(true) {
+        //int positionToTriangle = definePointPositionToTriangle(closestTriangle, point);
+        //if (positionToTriangle != OUTSIDE) {
+            return closestTriangle;
+        //}
+    //}
+
+    //return emptyTriangle;
+}
+
+QVector<TriangularUnit> DelaunayTriangulation::
+    replaceTriangleWithThreeSplittedParts(TriangularUnit &triangle, Point &splittingPoint) {
+
+    QVector<TriangularUnit> newTriangles;
+    QSetIterator<Edge> it(triangle.getEdges());
+
+    while (it.hasNext()) {
+        newTriangles.append(TriangularUnit( it.next(), splittingPoint ));
+    }
+    triangles.removeOne(triangle);
+    appendTriangles(newTriangles);
+
+    return newTriangles;
+}
+
+QVector<TriangularUnit> DelaunayTriangulation::
+    replaceTriangleWithTwoSplittedParts(TriangularUnit &triangle, Point &splittingPoint) {
+
+    QVector<TriangularUnit> newTriangles;
+    Edge splittedEdge = triangle.getTriangleEdgeThatContainsPoint(splittingPoint);
+    triangle.getEdges().remove(splittedEdge);
+    QSetIterator<Edge> it(triangle.getEdges());
+
+    Edge remaindEdge1 = it.next(), remaindEdge2 = it.next();
+    Edge splittedEdgePart1(splittedEdge.getStartPoint(), splittingPoint);
+    Edge splittedEdgePart2(splittingPoint, splittedEdge.getEndPoint());
+
+    int startPointIndex = convexHull.indexOf(splittedEdge.getStartPoint());
+    int endPointIndex = convexHull.indexOf(splittedEdge.getEndPoint());
+
+    if ( startPointIndex >= 0 && endPointIndex >= 0 ) {
+        convexHull.insert(std::max(startPointIndex, endPointIndex), splittingPoint);
+    }
+
+    if (splittedEdgePart1.areConnected(remaindEdge1)) {
+        newTriangles.append(TriangularUnit(splittedEdgePart1, remaindEdge1));
+        newTriangles.append(TriangularUnit(splittedEdgePart2, remaindEdge2));
+    } else {
+        newTriangles.append(TriangularUnit(splittedEdgePart2, remaindEdge1));
+        newTriangles.append(TriangularUnit(splittedEdgePart1, remaindEdge2));
+    }
+
+    triangles.removeOne(triangle);
+    appendTriangles(newTriangles);
+
+    return newTriangles;
 }
 
 bool DelaunayTriangulation::
-    isPolygonConvex(Point2D* points) {
+    arePointsSeparatedByEdge(Point& p1, Point& p2, Edge& edge) {
 
-    Point2D p1, p2, p3;
-    Point2D vect1, vect2;
-    double cosAngle, angle;
-    int isAngleBelowStraingtSum;
+    return ExMath::areLinesCrossed(p1, p2, edge.getEndPoint(), edge.getStartPoint());
+}
+ConvexHull DelaunayTriangulation::
+    getConvexHull() const {
 
-    for (int i = 0; i < 4; i++) {
-        p1 = points[(i + 3) % 4];
-        p2 = points[i % 4];
-        p3 = points[(i + 1) % 4];
+    return convexHull;
+}
 
-        vect1.setX( p2.x() - p1.x() );
-        vect1.setY( p2.y() - p1.y() );
 
-        vect2.setX( p3.x() - p2.x() );
-        vect2.setY( p3.y() - p2.y() );
+QVector<TriangularUnit> DelaunayTriangulation::
+    createNewBoundaryTriangles(Point &outerPoint) {
 
-        cosAngle = (vect1.x()*vect2.x() + vect1.y()*vect2.y()) /
-                   sqrt((vect1.x()*vect1.x() + vect1.y()*vect1.y())*(vect2.x()*vect2.x()+ vect2.y()*vect2.y()));
-        angle = acos(cosAngle);
-        
-        isAngleBelowStraingtSum = angle < M_PI? 1: 0;
+    QVector<TriangularUnit> newTriangles;
+
+    if (!convexHull.length()) return newTriangles;
+
+    Edge closestEdge = getClosestConvexEdgeToPoint(outerPoint);
+    Point leftTangentEnd, rightTangentEnd;
+    int leftTangentEndIndex, rightTangentEndIndex;
+
+    leftTangentEnd = closestEdge.getStartPoint();
+    rightTangentEnd = closestEdge.getEndPoint();
+    leftTangentEndIndex = convexHull.indexOf(leftTangentEnd);
+    rightTangentEndIndex = convexHull.indexOf(rightTangentEnd);
+
+    int nextLeftTangentEndIndex = leftTangentEndIndex;
+    int nextRightTangentEndIndex = rightTangentEndIndex;
+    int newPointIndex;
+
+    // Find points that are the ends of the tangents to the triangulation
+    double maxAngleBetweenTangents = acos(ExMath::cosAngleBetweenVectors(leftTangentEnd, outerPoint, rightTangentEnd));
+
+    for (int j = 0; j < 2; j++) {
+        for (int i = 0, len = convexHull.length(); i < len; i++) {
+
+            if (j == 0) {
+                leftTangentEndIndex = nextLeftTangentEndIndex;
+                newPointIndex = nextLeftTangentEndIndex = (leftTangentEndIndex + len - 1) % len;
+            } else {
+                rightTangentEndIndex = nextRightTangentEndIndex;
+                newPointIndex = nextRightTangentEndIndex = (rightTangentEndIndex + 1) % len;
+            }
+
+            leftTangentEnd = convexHull.at(nextLeftTangentEndIndex);
+            rightTangentEnd = convexHull.at(nextRightTangentEndIndex);
+            double angleBetweenTangents = acos(ExMath::cosAngleBetweenVectors(leftTangentEnd, outerPoint, rightTangentEnd));
+
+            if (angleBetweenTangents < maxAngleBetweenTangents ||
+                nextLeftTangentEndIndex == nextRightTangentEndIndex||
+                ExMath::isLeftTurn(rightTangentEnd, outerPoint, leftTangentEnd) /*||
+                crossPointIncidentEdge(Edge(outerPoint, convexHull.at(newPointIndex)), closestPoint)*/) {
+
+                nextLeftTangentEndIndex = leftTangentEndIndex;
+                nextRightTangentEndIndex = rightTangentEndIndex;
+                break;
+            } else {
+                maxAngleBetweenTangents = angleBetweenTangents;
+            }
+        }
     }
-    
-    return isAngleBelowStraingtSum == 4 || isAngleBelowStraingtSum == 0;
+
+    leftTangentEnd = convexHull.at(leftTangentEndIndex);
+    rightTangentEnd = convexHull.at(rightTangentEndIndex);
+
+    Point hullPointToRemove;
+
+    while (hullPointToRemove != rightTangentEnd) {
+        int hullPointToRemoveIndex = (leftTangentEndIndex + 1) % convexHull.length();
+        hullPointToRemove = convexHull.at(hullPointToRemoveIndex);
+        TriangularUnit triangle(leftTangentEnd, outerPoint, hullPointToRemove);
+        newTriangles.append(triangle);
+        if (hullPointToRemove != rightTangentEnd) {
+            convexHull.remove(hullPointToRemoveIndex);
+            if (hullPointToRemoveIndex < leftTangentEndIndex) {
+                leftTangentEndIndex--;
+            }
+        }
+        leftTangentEnd = hullPointToRemove;
+    }
+    convexHull.insert((leftTangentEndIndex + 1) % convexHull.length(), outerPoint);
+    appendTriangles(newTriangles);
+    return newTriangles;
+}
+
+void DelaunayTriangulation::
+    appendTriangles(QVector<TriangularUnit> &newTriangles) {
+
+    for(int i = 0; i < newTriangles.length(); i++) {
+        appendTriangles(newTriangles[i]);
+    }
+}
+
+bool DelaunayTriangulation::
+    crossPointIncidentEdge(Edge edge, Point p) {
+
+    QSetIterator<Edge> it(edges);
+    while (it.hasNext()) {
+        Edge curEdge = it.next();
+        if (ExMath::areLinesCrossed(curEdge.getStartPoint(), curEdge.getEndPoint(), edge.getStartPoint(), edge.getEndPoint())) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+QSet<Edge> DelaunayTriangulation::
+    findEdgesIncidentToPoint(Point p) {
+
+    QSet<Edge> incidentEdges;
+    incidentEdges.reserve(3);
+    QSetIterator<Edge> it(edges);
+
+    while (it.hasNext()) {
+        Edge curEdge = it.next();
+        if (curEdge.getEndPoint() == p || curEdge.getStartPoint() == p) {
+            incidentEdges.insert(curEdge);
+        }
+    }
+
+    return incidentEdges;
+}
+
+void DelaunayTriangulation::
+    appendEdges(QSet<Edge> &newEdges) {
+
+    QSetIterator<Edge> it(newEdges);
+    while (it.hasNext()) {
+        Edge nextEdge = it.next();
+        edges.insert(nextEdge);
+    }
+}
+
+void DelaunayTriangulation::
+    removeEdges(QSet<Edge> &newEdges) {
+
+    QSetIterator<Edge> it(newEdges);
+    while (it.hasNext()) {
+        Edge nextEdge = it.next();
+        edges.remove(nextEdge);
+    }
+}
+
+void DelaunayTriangulation::
+    appendTriangles(TriangularUnit& triangle) {
+
+    triangles.append(triangle);
+    appendEdges(triangle.getEdges());
+}
+
+QVector<int> DelaunayTriangulation::
+    getTriangularUnitNeighbors(TriangularUnit& triangular) {
+
+    QVector<int> neighborsIndexes;
+    neighborsIndexes.reserve(3);
+
+    for (int i = 0; i < triangles.length(); i++) {
+        TriangularUnit curTriangle = triangles.at(i);
+        if (curTriangle != triangular && curTriangle.hasMutualEdge(triangular)) {
+            neighborsIndexes.append(i);
+        }
+    }
+
+    return neighborsIndexes;
 }
 
 /**
- * @brief triangularsFromConvexPolygon
- * @param polygon
- *
- *     2. Если точки образуют выпуклый четырёхугольник, то берём любые 3 точки и
- *проверяем положение четвёртой точки относительно окружности,
- *описанной вокруг первых трёх точек. Здесь возможны три варианта:
- *       1. Точка лежит за пределами окружности. Данная триангуляция оптимальна,
- *       строим треугольник из первых трёх точек и соединяем с четвёртой ближайшие к ней 2 точки.
- *       2. Точка лежит внутри окружности. В этом случае нарушается условие триангуляции Делоне,
- *    и отрезками соединяются четвёртая точка со всеми остальными точками, а также те точки,
- *    отрезки между которыми не создадут пересечений с уже проведёнными отрезками.
- *       3. Точка лежит на окружности. В этом случае любая триангуляция оптимальна.
+ * @brief DelaunayTriangulation::checkDelaunayConditionLocaly
+ * @param triangles
+ * @return {bool} is triangulation restructured
  */
-Vector < TriangularUnit >* DelaunayTriangulation::
-    triangularsFromConvexPolygon(Vector < Point2D >& polygon) {
+bool DelaunayTriangulation::
+    checkDelaunayConditionLocaly(QVector<TriangularUnit>& trianglesToCheck) {
 
-    Vector < TriangularUnit >* triangles = new Vector < TriangularUnit >();
-    Point2D lastPoint = polygon.last();
-    polygon.pop_back();
-    int isPointInsideEscribedCircle = lastPoint.isPointInsideEscribedCircle(polygon);
+    bool isRestructured = false;
 
-    if (isPointInsideEscribedCircle >= 0) {
+    for (int i = 0; i < trianglesToCheck.length(); i++) {
+        int triangleIndex = i;
+        TriangularUnit triangle = trianglesToCheck.at(triangleIndex);
+        QVector< int > neighborsIndexes = getTriangularUnitNeighbors(triangle);
+        QVectorIterator< int > itNeighbors( neighborsIndexes );
 
-        /*
-         * isPointInsideEscribedCircle > 0
-         *
-         * Точка лежит за пределами окружности. Данная триангуляция оптимальна,
-         * строим треугольник из первых трёх точек и
-         * соединяем с четвёртой ближайшие к ней 2 точки.
-         */
+        QVector<Point> triangleVertexes = triangle.getVertexes();
 
-        /* isPointInsideEscribedCircle = 0
-         *
-         * Точка лежит на окружности. В этом случае любая триангуляция оптимальна
-         */
-        TriangularUnit* newTriangle = new TriangularUnit(polygon.data());
-        triangles->append(*newTriangle);
-
-        Point2D* twoClosestPoints = lastPoint.getTwoClosestPointTo(polygon.data(), 3);
-        newTriangle = new TriangularUnit(lastPoint, twoClosestPoints[0], twoClosestPoints[1]);
-        triangles->append(*newTriangle);
-
-        delete [] twoClosestPoints ;
-
-    } else {
-
-        /* Точка лежит внутри окружности.
-         * В этом случае нарушается условие триангуляции Делоне,
-         * и отрезками соединяются четвёртая точка со всеми остальными точками,
-         * а также те точки, отрезки между которыми не создадут пересечений с уже проведёнными отрезками.
-         */
-        Vector < Edge > newEdges;
-        for(int i = 0; i < 3; i++) {
-            newEdges.append(Edge(lastPoint, polygon.at(i)));
+        if (neighborsIndexes.length() > 3) {
+            ExMath::consoleLog(neighborsIndexes.length());
         }
-        newEdges.appendItems(Edge::createAllPossibleEdgesThatNotCrossOthers(polygon, newEdges));
+
+        while (itNeighbors.hasNext()) {
+            int neighborIndex = itNeighbors.next();
+            TriangularUnit neighbor = triangles.at(neighborIndex);
+            Point p0 = triangle.getNotAdjacentPoint(neighbor);
+            Edge mutualEdge = neighbor.getMutualEdge(triangle);
+            double x0 = p0.x(), y0 = p0.y();
+
+            int indexMutualVertex1 = triangleVertexes.indexOf(mutualEdge.getStartPoint());
+            int indexMutualVertex2 = triangleVertexes.indexOf(mutualEdge.getEndPoint());
+            int i1 = (abs(indexMutualVertex1 - indexMutualVertex2) == 1)?
+                         std::min(indexMutualVertex1, indexMutualVertex2):
+                         std::max(indexMutualVertex1, indexMutualVertex2);
+            int i3 = (i1 == indexMutualVertex1)? indexMutualVertex2: indexMutualVertex1;
+            int i2 = 3 - i1 - i3;
+            double x1 = triangleVertexes.at(i1).x(), y1 = triangleVertexes.at(i1).y();
+            double x2 = triangleVertexes.at(i2).x(), y2 = triangleVertexes.at(i2).y();
+            double x3 = triangleVertexes.at(i3).x(), y3 = triangleVertexes.at(i3).y();
+
+            double targetValue = fabs((x0 - x1)*(y0 - y3) - (x0 - x3)*(y0 - y1))*
+                                 ((x2 - x1)*(x2 - x3) + (y2 - y1)*(y2 - y3)) +
+                                 ((x0 - x1)*(x0 - x3) + (y0 - y1)*(y0 - y3))*
+                                 fabs((x2 - x1)*(y2 - y3) - (x2 - x3)*(y2 - y1));
+
+            //targetValue = (x1*x1 + y1*y1)*(y2*x3 - x2*y3) + (x2*x2 + y2*y2)*(x1*y3 - y1*x3) + (x3*x3 + y3*y3)*(y1*x2 - x1*y2) <= 0;
+            if (targetValue < 0) {
+                Point p4 = neighbor.getNotAdjacentPoint(triangle);
+                Edge newMutualEdge(p0, p4);
+                TriangularUnit newTriangle1(newMutualEdge, mutualEdge.getEndPoint());
+                TriangularUnit newTriangle2(newMutualEdge, mutualEdge.getStartPoint());
+
+                edges.remove(mutualEdge);
+                edges.insert(newMutualEdge);
+                triangles[neighborIndex] = newTriangle1;
+                triangles[triangles.indexOf(triangle)] = newTriangle2;
+                trianglesToCheck.append(newTriangle1);
+                trianglesToCheck.append(newTriangle2);
+                break;
+
+                ExMath::consoleLog("swapped");
+                isRestructured = true;
+            }
+        }
     }
-    return triangles;
+
+    return isRestructured;
 }
 
+void DelaunayTriangulation::
+    clear() {
 
+    ExMath::consoleLog("_______________New triangulation_______________");
+    triangles.clear();
+    edges.clear();
+    points.clear();
+    convexHull.clear();
+    inscribedCircleCenters.clear();
+}
+
+void DelaunayTriangulation::setPoints(const QVector<Point> &value) {
+    clear();
+    points = value;
+}

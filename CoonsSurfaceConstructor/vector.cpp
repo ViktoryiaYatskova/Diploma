@@ -13,7 +13,7 @@ void Vector::appendItems(T* itemsArray, int length) {
     }
 }
 
-void Vector::appendItems( Vector <T>& items) {
+void Vector::appendItems( Vector<T>& items) {
     appendItems(items.data(), items.length());
 }
 
