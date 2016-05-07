@@ -8,7 +8,7 @@ CreateScene::CreateScene(QWidget *parent) :
     QGLWidget(QGLFormat(QGL::SampleBuffers), parent),
     MIN_X (-2),
     MIN_Y (-2),
-    MIN_Z (-2),
+    MIN_Z (-20),
     MAX_X (2),
     MAX_Y (2),
     MAX_Z (20),
@@ -60,8 +60,16 @@ void CreateScene::initializeGL(){
     glEnable(GL_LIGHT0);
     glEnable(GL_MULTISAMPLE);
     //static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
-    static GLfloat lightPosition[4] = { MAX_X, MAX_Y*2, MAX_Z, 1.0 };
+    static GLfloat lightPosition[4] = { MAX_X, MAX_Y, MAX_Z, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+
+    GLfloat a[] = { 0.1, 0.1, 0.1, 1.0 };
+    glColor4f(1.0, 1.0, 1.0, 1.0);
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT, a);
+    glEnable(GL_COLOR_MATERIAL); /* WARNING: Ambient and diffuse material latch immediately to the current color. */
+    glColorMaterial(GL_FRONT, GL_DIFFUSE);
+    glColor3f(0.3, 0.5, 0.6);
 }
 
 void CreateScene::resizeGL(int width, int height){
@@ -76,11 +84,11 @@ void CreateScene::
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    //glColorMaterial(GL_FRONT, GL_DIFFUSE);
-    //glEnable(GL_COLOR_MATERIAL);
+    glColorMaterial(GL_FRONT, GL_DIFFUSE);
+    glEnable(GL_COLOR_MATERIAL);
 
     glLoadIdentity();
-    glTranslatef(0.0, 0.0, -10.0);
+    //glTranslatef(0.0, 0.0, -10.0);
     glRotatef(xRot / ROTATOR_STEP, 1.0, 0.0, 0.0);
     glRotatef(yRot / ROTATOR_STEP, 0.0, 1.0, 0.0);
     glRotatef(zRot / ROTATOR_STEP, 0.0, 0.0, 1.0);
@@ -191,14 +199,14 @@ void CreateScene::
 
     glPushAttrib(GL_ENABLE_BIT); //glPushAttrib is done to return everything to normal after drawing
 
-    //glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
     glEnable(GL_LINE_STIPPLE);
 
-    glPointSize(3.0);
-    glLineWidth(1.0);
+    glPointSize(2.5);
+    glLineWidth(2.0);
     glColor3f(1.0f, 0.0f, 1.0f);
 
-    glLineStipple(1, 0xAAAA);
+    glLineStipple(2, 0xAAAA);
 
     QVectorIterator<Point> i(triangulation.getConvexHull());
     Point first = i.next(), p1 = first, p2;
