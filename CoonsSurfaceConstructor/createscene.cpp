@@ -13,7 +13,9 @@ CreateScene::CreateScene(QWidget *parent) :
     MAX_Y (2),
     MAX_Z (20),
     MAX_ROTATOR_VALUE(360),
-    ROTATOR_STEP(16) {
+    ROTATOR_STEP(16),
+    MAX_WHEEL(8),
+    MIN_WHEEL(-8) {
 
     setAutoFillBackground(false);
 
@@ -22,6 +24,8 @@ CreateScene::CreateScene(QWidget *parent) :
     xRot = 0;
     yRot = 0;
     zRot = 0;
+
+    scaling = 0;
 }
 
 void CreateScene::draw() {
@@ -89,6 +93,8 @@ void CreateScene::
 
     glLoadIdentity();
     //glTranslatef(0.0, 0.0, -10.0);
+
+    glScalef(scaling, scaling, scaling);
     glRotatef(xRot / ROTATOR_STEP, 1.0, 0.0, 0.0);
     glRotatef(yRot / ROTATOR_STEP, 0.0, 1.0, 0.0);
     glRotatef(zRot / ROTATOR_STEP, 0.0, 0.0, 1.0);
@@ -223,7 +229,6 @@ void CreateScene::
         p2 = first;
         glVertex3f(p1.x(), p1.y(), p1.z());
         glVertex3f(p2.x(), p2.y(), p2.z());
-
     glEnd();
     glPopAttrib();
 }
@@ -241,6 +246,21 @@ void CreateScene::
     }
 }
 
+void CreateScene::
+    wheelEvent(QWheelEvent *event) {
+
+    double delta = std::min(MAX_WHEEL, event->delta()/120);
+    delta = std::max((double)MIN_WHEEL, delta);
+
+    //double numDegrees = delta / 8.0;
+    //double numSteps = numDegrees / 15.0;
+    //scaling *= std::pow(1.125, numSteps);
+    scaling += delta/(double)MAX_WHEEL;
+
+    ExMath::consoleLog(scaling);
+    updateGL();
+}
+
 Point& CreateScene::toOpenGLPoint(Point& p) {
     p.setX(p.x() / (double) width()
                * (MAX_X - MIN_X) + MIN_X);
@@ -251,6 +271,7 @@ Point& CreateScene::toOpenGLPoint(Point& p) {
 
 void CreateScene::
     buildSimpleTriangular() {
+
     if (points.length() < 3) return;
 
     triangulation.setPoints(points);

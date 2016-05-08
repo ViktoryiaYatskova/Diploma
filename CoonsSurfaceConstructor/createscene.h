@@ -37,6 +37,7 @@ public:
 
 protected:
     void mouseReleaseEvent(QMouseEvent*);
+    void wheelEvent(QWheelEvent *);
     void initializeGL();
     void resizeGL(int w, int h);
     void paintGL();
@@ -72,13 +73,19 @@ private:
     const int MAX_ROTATOR_VALUE;
     const int ROTATOR_STEP;
 
+    const int MAX_WHEEL;
+    const int MIN_WHEEL;
+
     int xRot;
     int yRot;
     int zRot;
 
+    float scaling;
+
     Point& toOpenGLPoint(Point &p);
     Point& addZCoordinate(Point &p);
     void qNormalizeAngle(int &angle);
+
 public slots:
     // slots for xyz-rotation slider
     void setXRotation(int angle);
