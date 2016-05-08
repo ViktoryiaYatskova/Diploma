@@ -80,7 +80,7 @@ private:
     int yRot;
     int zRot;
 
-    float scaling;
+    double scaling;
 
     Point& toOpenGLPoint(Point &p);
     Point& addZCoordinate(Point &p);

@@ -25,7 +25,7 @@ CreateScene::CreateScene(QWidget *parent) :
     yRot = 0;
     zRot = 0;
 
-    scaling = 0;
+    scaling = 1;
 }
 
 void CreateScene::draw() {
@@ -249,13 +249,13 @@ void CreateScene::
 void CreateScene::
     wheelEvent(QWheelEvent *event) {
 
-    double delta = std::min(MAX_WHEEL, event->delta()/120);
+    double delta = event->delta()/120;
+    delta = std::min(MAX_WHEEL, event->delta()/120);
     delta = std::max((double)MIN_WHEEL, delta);
 
-    //double numDegrees = delta / 8.0;
-    //double numSteps = numDegrees / 15.0;
-    //scaling *= std::pow(1.125, numSteps);
     scaling += delta/(double)MAX_WHEEL;
+    scaling = std::max(0.0, scaling);
+    scaling = std::min(2.0, scaling);
 
     ExMath::consoleLog(scaling);
     updateGL();
