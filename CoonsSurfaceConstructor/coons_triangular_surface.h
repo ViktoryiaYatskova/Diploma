@@ -5,21 +5,23 @@
 #include <QVector>
 #include "definitions.h"
 
-typedef QVector3D BarycenterPoint;
-
 class CoonsTriangularSurface {
 
 private:
-    Point V1;
-    Point V2;
-    Point V3;
+    Point& V1;
+    Point& V2;
+    Point& V3;
+
+    Vector& n1;
+    Vector& n2;
+    Vector& n3;
 
 public:
-    CoonsTriangularSurface(TriangularUnit&);
+    CoonsTriangularSurface(TriangularUnit&, Vector&, Vector&, Vector&);
 
     BarycenterPoint cartesianToBarycentric(Point& p);
     Point barycentricToCartesian(BarycenterPoint& p);
-    BarycenterPoint negPoint(BarycenterPoint& p);
+    static BarycenterPoint negPoint(BarycenterPoint& p);
     QVector<BarycenterPoint> oppositePoints(BarycenterPoint&);
 };
 

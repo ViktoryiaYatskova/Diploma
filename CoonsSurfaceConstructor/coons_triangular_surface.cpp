@@ -1,16 +1,19 @@
 #include "coons_triangular_surface.h"
 
-CoonsTriangularSurface::CoonsTriangularSurface(TriangularUnit& triangle) {
-    V1 = triangle.getVertexes().at(0);
-    V2 = triangle.getVertexes().at(1);
-    V3 = triangle.getVertexes().at(2);
-}
+CoonsTriangularSurface::
+    CoonsTriangularSurface(TriangularUnit& triangle, Vector& N1, Vector& N2, Vector& N3):
 
-// 1) decart -> baricenter
-// 2)
+    V1(triangle.getVertexes()[0]),
+    V2(triangle.getVertexes()[1]),
+    V3(triangle.getVertexes()[2]),
+    n1(N1),
+    n2(N2),
+    n3(N3)
+{}
 
+BarycenterPoint CoonsTriangularSurface::
+    cartesianToBarycentric(Point& p) {
 
-BarycenterPoint CoonsTriangularSurface::cartesianToBarycentric(Point& p) {
     BarycenterPoint barPoint;
     double b1, b2, b3,
            x = p.x(), y = p.y(),
@@ -31,7 +34,9 @@ BarycenterPoint CoonsTriangularSurface::cartesianToBarycentric(Point& p) {
     return barPoint;
 }
 
-Point CoonsTriangularSurface::barycentricToCartesian(BarycenterPoint& p) {
+Point CoonsTriangularSurface::
+    barycentricToCartesian(BarycenterPoint& p) {
+
     double b1 =  p.x(), b2 =  p.y(), b3 =  p.z();
     double x = V1.x() * b1 + V2.x() * b2 + V3.x() * b3;
     double y = V1.y() * b1 + V2.y() * b2 + V3.y() * b3;
@@ -39,11 +44,15 @@ Point CoonsTriangularSurface::barycentricToCartesian(BarycenterPoint& p) {
     return Point(x, y, z);
 }
 
-BarycenterPoint CoonsTriangularSurface::negPoint(BarycenterPoint& p) {
+BarycenterPoint CoonsTriangularSurface::
+    negPoint(BarycenterPoint& p) {
+
     return BarycenterPoint(1 - p.x(), 1 - p.y(), 1 - p.z());
 }
 
-QVector<BarycenterPoint> CoonsTriangularSurface::oppositePoints(BarycenterPoint &p1) {
+QVector<BarycenterPoint> CoonsTriangularSurface::
+    oppositePoints(BarycenterPoint &p1) {
+
     BarycenterPoint opV1(0, p1.y() / (p1.y() + p1.z()),  p1.z() / (p1.y() + p1.z()));
     BarycenterPoint opV2(p1.x() / (p1.x() + p1.z()), 0, p1.z() / (p1.x() + p1.z()));
     BarycenterPoint opV3(p1.x() / (p1.y() + p1.x()), p1.y() / (p1.y() + p1.x()), 0);

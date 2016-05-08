@@ -1,0 +1,17 @@
+#ifndef SURFACE_H
+#define SURFACE_H
+
+#include <QVector>
+#include "coons_triangular_surface.h"
+#include "delaunaytriangulation.h"
+
+class Surface: private QVector<CoonsTriangularSurface> {
+private:
+    DelaunayTriangulation& triangulation;
+    
+public:
+    Surface(DelaunayTriangulation&);
+    void build();
+};
+
+#endif // SURFACE_H

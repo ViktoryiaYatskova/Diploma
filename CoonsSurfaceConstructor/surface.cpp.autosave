@@ -1,0 +1,16 @@
+#include "surface.h"
+
+Surface::Surface(DelaunayTriangulation& delTriangulation):
+    triangulation(delTriangulation) {
+}
+
+void Surface::build(){
+    const QVector< TriangularUnit > &triangles(triangulation.getTriangles());
+    for (int i = 0; i < triangles.length(); i++) {
+        const TriangularUnit& triangle(triangles.at(i));
+        
+    }
+}
+
+
+

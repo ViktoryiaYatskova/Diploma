@@ -3,9 +3,12 @@
 
 #include <QPointF>
 #include <QVector3D>
+#include <QVector>
+#include "coons_triangular_surface.h"
 
 typedef QVector3D Point;
 typedef QVector3D Vector;
 typedef QVector3D BarycenterPoint;
+typedef QVector<CoonsTriangularSurface> Surface;
 
 #endif // DEFINITIONS

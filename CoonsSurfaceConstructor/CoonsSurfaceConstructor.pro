@@ -24,7 +24,8 @@ SOURCES +=  main.cpp\
             qroundlist.cpp \
     grahamTriangulation.cpp \
     convexhull.cpp \
-    coons_triangular_surface.cpp
+    coons_triangular_surface.cpp \
+    surface.cpp
 
 HEADERS  += mainwindow.h \
             delaunaytriangulation.h \
@@ -37,6 +38,7 @@ HEADERS  += mainwindow.h \
     point_position_to_triangle.h \
     convexhull.h \
     coons_triangular_surface.h \
-    definitions.h
+    definitions.h \
+    surface.h
 
 FORMS    += mainwindow.ui
