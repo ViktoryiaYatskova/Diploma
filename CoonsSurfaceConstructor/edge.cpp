@@ -49,11 +49,19 @@ bool Edge::areConnected(const Edge& other) {
             other.getStartPoint() == getEndPoint() || other.getEndPoint() == getStartPoint();
 }
 
+bool Edge::isAdjacentToPoint(const Point &p) const {
+    return ( point1 == p || point2 == p );
+}
+
 Point Edge::getMutualPoint(const Edge& other) const {
     if( other.getEndPoint() == getEndPoint() || other.getEndPoint() == getStartPoint() )
         return other.getEndPoint();
 
     return other.getStartPoint();
+}
+
+bool Edge::isNull() const {
+   return point1.isNull() && point2.isNull();
 }
 
 double Edge::distantToPoint(Point &p) {

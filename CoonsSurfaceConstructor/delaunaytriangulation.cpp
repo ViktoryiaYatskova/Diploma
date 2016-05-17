@@ -54,11 +54,41 @@ QVector<TriangularUnit> DelaunayTriangulation::
     return newTriangles;
 }
 
+QSet<TriangularUnit> DelaunayTriangulation::
+    getVertexAdjacentTriangles(const Point& vertex) const{
+
+    QSet<TriangularUnit> adjacentTriangles;
+
+    for (int i = 0; i < triangles.length(); i++) {
+        TriangularUnit curTriangle = triangles[i];
+        if (curTriangle.getVertexes().contains(vertex)) {
+            adjacentTriangles.insert(curTriangle);
+        }
+    }
+
+    return adjacentTriangles;
+}
+QVector<Point> DelaunayTriangulation::getPoints() const
+{
+    return points;
+}
+
+
 void DelaunayTriangulation::
     convertToDelaunay() {
 
     checkDelaunayConditionLocaly(triangles);
 }
+QVector<TriangularUnit> DelaunayTriangulation::
+    getTriangles() const {
+    return triangles;
+}
+
+void DelaunayTriangulation::
+    setTriangles(const QVector<TriangularUnit> &value){
+    triangles = value;
+}
+
 
 void DelaunayTriangulation::
     build(bool isDelaunay) {
@@ -323,20 +353,6 @@ void DelaunayTriangulation::
     }
 }
 
-bool DelaunayTriangulation::
-    crossPointIncidentEdge(Edge edge, Point p) {
-
-    QSetIterator<Edge> it(edges);
-    while (it.hasNext()) {
-        Edge curEdge = it.next();
-        if (ExMath::areLinesCrossed(curEdge.getStartPoint(), curEdge.getEndPoint(), edge.getStartPoint(), edge.getEndPoint())) {
-            return true;
-        }
-    }
-
-    return false;
-}
-
 QSet<Edge> DelaunayTriangulation::
     findEdgesIncidentToPoint(Point p) {
 
@@ -355,7 +371,7 @@ QSet<Edge> DelaunayTriangulation::
 }
 
 void DelaunayTriangulation::
-    appendEdges(QSet<Edge> &newEdges) {
+    appendEdges(const QSet<Edge> &newEdges) {
 
     QSetIterator<Edge> it(newEdges);
     while (it.hasNext()) {
@@ -378,23 +394,25 @@ void DelaunayTriangulation::
     appendTriangles(TriangularUnit& triangle) {
 
     triangles.append(triangle);
-    appendEdges(triangle.getEdges());
+    const QSet<Edge>& edges(triangle.getEdges());
+    appendEdges(edges);
 }
 
-QVector<int> DelaunayTriangulation::
-    getTriangularUnitNeighbors(TriangularUnit& triangular) {
+QSet<TriangularUnit> DelaunayTriangulation::
+    getTriangleEdgeNeighbors(int triangularIndex) const{
 
-    QVector<int> neighborsIndexes;
-    neighborsIndexes.reserve(3);
+    QSet<TriangularUnit> neighbors;
+    TriangularUnit triangular = triangles[triangularIndex];
+    neighbors.reserve(3);
 
     for (int i = 0; i < triangles.length(); i++) {
-        TriangularUnit curTriangle = triangles.at(i);
+        TriangularUnit curTriangle = triangles[i];
         if (curTriangle != triangular && curTriangle.hasMutualEdge(triangular)) {
-            neighborsIndexes.append(i);
+            neighbors.insert(curTriangle);
         }
     }
 
-    return neighborsIndexes;
+    return neighbors;
 }
 
 /**
@@ -409,19 +427,27 @@ bool DelaunayTriangulation::
 
     for (int i = 0; i < trianglesToCheck.length(); i++) {
         int triangleIndex = i;
-        TriangularUnit triangle = trianglesToCheck.at(triangleIndex);
-        QVector< int > neighborsIndexes = getTriangularUnitNeighbors(triangle);
-        QVectorIterator< int > itNeighbors( neighborsIndexes );
+        TriangularUnit triangle = trianglesToCheck[triangleIndex];
+        int triangleIndexTotal = triangles.indexOf(triangle);
+        QSet< TriangularUnit > neighbors;
+
+        if (!triangle.getNeighborTriangulars().size()) {
+            neighbors = getTriangleEdgeNeighbors(triangleIndexTotal);
+            triangle.setNeighborTriangulars(neighbors);
+        } else {
+            neighbors = triangle.getNeighborTriangulars();
+        }
+
+        QSetIterator< TriangularUnit > itNeighbors( neighbors );
 
         QVector<Point> triangleVertexes = triangle.getVertexes();
 
-        if (neighborsIndexes.length() > 3) {
-            ExMath::consoleLog(neighborsIndexes.length());
+        if (neighbors.size() > 3) {
+            ExMath::consoleLog(neighbors.size());
         }
 
         while (itNeighbors.hasNext()) {
-            int neighborIndex = itNeighbors.next();
-            TriangularUnit neighbor = triangles.at(neighborIndex);
+            TriangularUnit neighbor = itNeighbors.next();
             Point p0 = triangle.getNotAdjacentPoint(neighbor);
             Edge mutualEdge = neighbor.getMutualEdge(triangle);
             double x0 = p0.x(), y0 = p0.y();
@@ -451,8 +477,10 @@ bool DelaunayTriangulation::
 
                 edges.remove(mutualEdge);
                 edges.insert(newMutualEdge);
-                triangles[neighborIndex] = newTriangle1;
-                triangles[triangles.indexOf(triangle)] = newTriangle2;
+                int neiborIndex = triangles.indexOf(neighbor);
+                triangles[neiborIndex] = newTriangle1;
+                triangles[triangleIndexTotal] = newTriangle2;
+
                 trianglesToCheck.append(newTriangle1);
                 trianglesToCheck.append(newTriangle2);
                 break;
@@ -477,7 +505,9 @@ void DelaunayTriangulation::
     inscribedCircleCenters.clear();
 }
 
-void DelaunayTriangulation::setPoints(const QVector<Point> &value) {
+void DelaunayTriangulation::
+    setPoints(const QVector<Point> &value) {
+
     clear();
     points = value;
 }

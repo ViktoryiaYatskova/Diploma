@@ -25,7 +25,9 @@ SOURCES +=  main.cpp\
     grahamTriangulation.cpp \
     convexhull.cpp \
     coons_triangular_surface.cpp \
-    surface.cpp
+    surface.cpp \
+    bernstein_polynomial.cpp \
+    vector.cpp
 
 HEADERS  += mainwindow.h \
             delaunaytriangulation.h \
@@ -39,6 +41,9 @@ HEADERS  += mainwindow.h \
     convexhull.h \
     coons_triangular_surface.h \
     definitions.h \
-    surface.h
+    surface.h \
+    bernstein_polynomial.hpp \
+    vector.h \
+    config.h
 
 FORMS    += mainwindow.ui

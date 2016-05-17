@@ -1,16 +1,17 @@
 #include "exMath.h"
+#include "bernstein_polynomial.hpp"
 
-void ExMath::consoleLog(const char* error) {
-    std::cout<<error<<std::endl;
+void ExMath::consoleLog(const char* error, bool end) {
+    std::cout<<error;
+    if(end) std::cout<<std::endl;
 }
 
-void ExMath::consoleLog(int error) {
-    std::cout<<error<<std::endl;
+void ExMath::consoleLog(double error, bool end) {
+    std::cout<<error;
+    if(end) std::cout<<std::endl;
 }
 
 ExMath::ExMath() {}
-
-const double ExMath::PRECISION = 0.0001;
 
 double ExMath::DOUBLE_MAX = std::numeric_limits<double>::max();
 
@@ -36,11 +37,15 @@ bool ExMath::
     double product = dotProduct2D(lineB - point, lineA - point);
     product /= distantBeetweenPoints(lineB, point) * distantBeetweenPoints(lineA, point);
 
-    return fabs(product + 1) < PRECISION;
+    return fabs(product + 1) < CoonsPatches::PRECISION;
 }
 
-float ExMath::dotProduct2D(Point p1, Point p2) {
+double ExMath::dotProduct2D(Point p1, Point p2) {
     return p1.x() * p2.x() + p1.y() * p2.y();
+}
+
+double *ExMath::bernstein(int n, double x) {
+    return bernstein_poly_01(n, x);
 }
 
 bool ExMath::isPointProjectionOnSegment(Point point, Point lineA, Point lineB) {
@@ -66,7 +71,7 @@ int ExMath::
 
     double s = (bx-ax)*(py-ay)-(by-ay)*(px-ax);
 
-    return fabs(s) > PRECISION ? ( s / fabs(s) ): 0;
+    return fabs(s) > CoonsPatches::PRECISION ? ( s / fabs(s) ): 0;
 }
 
 bool ExMath::isLeftTurn(Point c, Point a, Point b){
@@ -126,7 +131,7 @@ double area (Point a, Point b, Point c) {
     return (b.x() - a.x()) * (c.y() - a.y()) - (b.y() - a.y()) * (c.x() - a.x());
 }
 
-bool intersect_1 (float a, float b, float c, float d) {
+bool intersect_1 (double a, double b, double c, double d) {
     int temp;
     if (a > b) {
         temp = a;
@@ -417,3 +422,49 @@ Point* Point::
 
 //    return kst;
 //}
+
+
+bool ExMath::
+    precisionEqual(double x, double y) {
+
+    return fabs(x - y) < CoonsPatches::PRECISION;
+}
+
+double ExMath::
+    max(double a, double b, double c) {
+
+    double max1 = std::max(a, b);
+    return std::max(max1, c);
+}
+
+void ExMath::consoleLogVector3D(const QVector3D &p){
+    consoleLog("x:", false);
+    consoleLog(p.x(), false);
+    consoleLog(" y:", false);
+    consoleLog(p.y(), false);
+    consoleLog(" z:", false);
+    consoleLog(p.z());
+}
+
+void ExMath::consoleLogSurfacePoint(BarycenterPoint& b, Point& p) {
+    ExMath::consoleLog("key:", false);
+    ExMath::consoleLogVector3D(b);
+
+    ExMath::consoleLog("value:", false);
+    ExMath::consoleLogVector3D(p);
+}
+
+double *ExMath::getHermiteCoefficients(double t) {
+    double* hermites = new double[4];
+    hermites[0] = 2. * t*t*t - 3.*t*t + 1.;
+    hermites[1] = t*t*t - 2.*t*t + t;
+    hermites[2] = t*t*t - t*t;
+    hermites[3] = -2. * t*t*t + 3.*t*t;
+    return hermites;
+}
+
+double ExMath::
+    manhattamDistanse(const QVector3D& p1, const QVector3D& p2) {
+
+    return std::fabs(p1.x() - p2.x()) + std::fabs(p1.y() - p2.y()) + std::fabs(p1.z() - p2.z());
+}

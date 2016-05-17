@@ -1,19 +1,18 @@
 #include "vector.h"
 
-Vector::Vector() {}
-
-Vector::Vector(T* itemsArray, int length) {
-    appendItems(itemsArray, length);
+Vector::
+    Vector():QVector3D(){
 }
 
-void Vector::appendItems(T* itemsArray, int length) {
-
-    for (int i = 0; i < length; i++) {
-        append(itemsArray[i]);
-    }
+Vector::Vector(const Vector &p):QVector3D(p){
 }
 
-void Vector::appendItems( Vector<T>& items) {
-    appendItems(items.data(), items.length());
+Vector::Vector(const QVector3D &p):QVector3D(p){
+}
+
+Vector::Vector(const QPoint &p):QVector3D(p){
+}
+
+Vector::Vector(double p1, double p2, double p3):QVector3D(p1, p2, p3) {
 }
 

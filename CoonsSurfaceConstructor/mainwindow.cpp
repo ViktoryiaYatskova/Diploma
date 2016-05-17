@@ -35,3 +35,7 @@ void MainWindow::on_convexHull_clicked(){
 void MainWindow::on_generatePoints_clicked(){
     ui->scene->generatePoints();
 }
+
+void MainWindow::on_buildSurfaceButton_clicked() {
+    ui->scene->buildSurface();
+}

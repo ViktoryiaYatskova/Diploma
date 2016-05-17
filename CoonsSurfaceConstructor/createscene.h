@@ -13,11 +13,13 @@
 #include <QVector>
 #include <QList>
 #include "definitions.h"
+#include "surface.h"
 
 enum MODE {
     ADD_POINTS,
     TRIANGULAR,
-    CONVEX_HULL
+    CONVEX_HULL,
+    SURFACE
 };
 
 class CreateScene : public QGLWidget {
@@ -26,6 +28,7 @@ public:
     explicit CreateScene(QWidget *parent = 0);
 
     void buildSimpleTriangular();
+    void buildSurface();
     void clear();
 
     void showConvexHull();
@@ -35,6 +38,7 @@ public:
 
     ~CreateScene();
 
+    void drawSurface();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void wheelEvent(QWheelEvent *);
@@ -49,6 +53,7 @@ private:
     void drawEdges(QSet<Edge>& edges);
 
     void drawPoints(QVector<Point>&);
+    void drawPoints(QList<Point>&);
     void drawPoints();
 
     MODE currentMode;
@@ -60,15 +65,16 @@ private:
     QVector<Point> points;
     DelaunayTriangulation triangulation;
     GrahamTriangulation grahamScan;
+    Surface surface;
 
     static const int POINTS_NUMBER;
-    const float MIN_X;
-    const float MIN_Y;
-    const float MIN_Z;
+    const double MIN_X;
+    const double MIN_Y;
+    const double MIN_Z;
 
-    const float MAX_X;
-    const float MAX_Y;
-    const float MAX_Z;
+    const double MAX_X;
+    const double MAX_Y;
+    const double MAX_Z;
 
     const int MAX_ROTATOR_VALUE;
     const int ROTATOR_STEP;
@@ -83,7 +89,6 @@ private:
     double scaling;
 
     Point& toOpenGLPoint(Point &p);
-    Point& addZCoordinate(Point &p);
     void qNormalizeAngle(int &angle);
 
 public slots:

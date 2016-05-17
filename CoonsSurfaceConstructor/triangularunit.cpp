@@ -10,10 +10,10 @@ TriangularUnit::
 }
 
 TriangularUnit::
-    TriangularUnit(const TriangularUnit &triangle) {
+    TriangularUnit(const TriangularUnit &triangle):
+    vertexes(triangle.vertexes),
+    edges(triangle.edges) {
 
-    vertexes = QVector<Point>(triangle.getVertexes());
-    edges = QSet<Edge>(triangle.edges);
     isEmpty = triangle.isEmpty;
     isRestructered = triangle.isRestructered;
 }
@@ -50,16 +50,60 @@ void TriangularUnit::setVertexes(const QVector<Point> &value) {
     vertexes = value;
 }
 
-bool TriangularUnit::getIsRestructered() const
-{
+bool TriangularUnit::
+    getIsRestructered() const {
     return isRestructered;
 }
 
-void TriangularUnit::setIsRestructered(bool value)
-{
+void TriangularUnit::
+    setIsRestructered(bool value){
     isRestructered = value;
 }
-void TriangularUnit::addPoints(const Point p1, const Point p2, const Point p3) {
+
+QSet<TriangularUnit> TriangularUnit::
+    getNeighborTriangulars() const {
+
+    return neighborTriangulars;
+}
+
+void TriangularUnit::
+    setNeighborTriangulars(const QSet<TriangularUnit> &value) {
+    neighborTriangulars = value;
+}
+
+Vector TriangularUnit::
+    normalVector() {
+
+    QVector3D v1 = vertexes[0] - vertexes[1];
+    QVector3D v2 = vertexes[1] - vertexes[2];
+
+    return (Vector)QVector3D::normal(v1, v2);
+}
+
+double TriangularUnit::
+    getSinAngleBetweenEdges(const Point &mutualVertex) {
+
+    Edge edge1, edge2;
+    QSetIterator< Edge > it( edges );
+    while (it.hasNext()) {
+        Edge edge = it.next();
+        if (edge.isAdjacentToPoint(mutualVertex)) {
+            if (edge1.isNull()) {
+                edge1 = edge;
+            } else {
+                edge2 = edge;
+                break;
+            }
+        }
+    }
+    QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
+    QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
+    return std::fabs(QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length());
+}
+
+void TriangularUnit::
+    addPoints(const Point p1, const Point p2, const Point p3) {
+
     int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
     if (p > 0) {
         vertexes.append(p1);
@@ -124,7 +168,7 @@ TriangularUnit::
     isEmpty = false;
 }
 
-Point TriangularUnit::getNotAdjacentPoint(TriangularUnit &adjacentTriangular) {
+Point TriangularUnit::getNotAdjacentPoint(const TriangularUnit &adjacentTriangular) {
 
     QVector<Point> adjacentTriangularPoints = adjacentTriangular.getVertexes();
 
@@ -138,7 +182,7 @@ Point TriangularUnit::getNotAdjacentPoint(TriangularUnit &adjacentTriangular) {
 }
 
 bool TriangularUnit::
-    hasMutualEdge(TriangularUnit& other) {
+    hasMutualEdge(const TriangularUnit& other) const {
 
     QSetIterator< Edge > it( other.getEdges() );
     while (it.hasNext()) {
@@ -152,7 +196,7 @@ bool TriangularUnit::
 }
 
 Edge TriangularUnit::
-    getMutualEdge(TriangularUnit& other) {
+    getMutualEdge(const TriangularUnit& other) const {
 
     QSetIterator< Edge > it( other.getEdges() );
     while (it.hasNext()) {
@@ -169,7 +213,7 @@ TriangularUnit::
     TriangularUnit(Point* trVertexes, TriangularUnit* triangulars) {
 
     for (int i = 0; i < 3; i++) {
-        neighborTriangulars.append(triangulars[i]);
+        neighborTriangulars.insert(triangulars[i]);
     }
 
     for (int i = 0; i < 3; i++) {
@@ -183,17 +227,17 @@ Point TriangularUnit::
     getEscribedCircleCenter() {
 
     if (escribedCircleCenter.isNull()) {
-        float x1 = vertexes.at(0).x();
-        float x2 = vertexes.at(1).x();
-        float x3 = vertexes.at(2).x();
+        double x1 = vertexes.at(0).x();
+        double x2 = vertexes.at(1).x();
+        double x3 = vertexes.at(2).x();
 
-        float y1 = vertexes.at(0).y();
-        float y2 = vertexes.at(1).y();
-        float y3 = vertexes.at(2).y();
+        double y1 = vertexes.at(0).y();
+        double y2 = vertexes.at(1).y();
+        double y3 = vertexes.at(2).y();
 
-        //float s = 0.5*abs(x1*(y2-y3)-y1*(x2-x3)+x2*y3-y2*x3);
-        //float x0 = ((x1*x1+y1*y1)*(y2-y3)-y1*(x2*x2+y2*y2-x3*x3-y3*y3)+y3*(x2*x2+y2*y2)-y2*(x3*x3+y3*y3))/(-4.0*s);
-        //float y0 = ((x1*x1+y1*y1)*(x2-x3)-x1*(x2*x2+y2*y2-x3*x3-y3*y3)+x3*(x2*x2+y2*y2)-x2*(x3*x3-y3*y3))/(4.0*s);
+        //double s = 0.5*abs(x1*(y2-y3)-y1*(x2-x3)+x2*y3-y2*x3);
+        //double x0 = ((x1*x1+y1*y1)*(y2-y3)-y1*(x2*x2+y2*y2-x3*x3-y3*y3)+y3*(x2*x2+y2*y2)-y2*(x3*x3+y3*y3))/(-4.0*s);
+        //double y0 = ((x1*x1+y1*y1)*(x2-x3)-x1*(x2*x2+y2*y2-x3*x3-y3*y3)+x3*(x2*x2+y2*y2)-x2*(x3*x3-y3*y3))/(4.0*s);
 
         double mD[3][3] = { //a
             {x1, y1, 1},
@@ -237,7 +281,7 @@ Point TriangularUnit::
 }
 
 bool TriangularUnit::
-    isPointInsideTriangle(Point point) {
+    isPointInsideTriangle(const Point& point) {
 
     return ExMath::pointPositionToTriangle(vertexes[0], vertexes[1], vertexes[2], point) == INSIDE;
     //Point center = getEscribedCircleCenter();
@@ -248,13 +292,13 @@ Point TriangularUnit::
     getInscribedCircleCenter() {
 
     if (inscribedCircleCenter.isNull()) {
-        float x1 = vertexes.at(0).x();
-        float x2 = vertexes.at(1).x();
-        float x3 = vertexes.at(2).x();
+        double x1 = vertexes.at(0).x();
+        double x2 = vertexes.at(1).x();
+        double x3 = vertexes.at(2).x();
 
-        float y1 = vertexes.at(0).y();
-        float y2 = vertexes.at(1).y();
-        float y3 = vertexes.at(2).y();
+        double y1 = vertexes.at(0).y();
+        double y2 = vertexes.at(1).y();
+        double y3 = vertexes.at(2).y();
 
         double a = sqrt((x2 - x1)*(x2 - x1) + (y2 - y1)*(y2 - y1));
         double b = sqrt((x3 - x2)*(x3 - x2) + (y3 - y2)*(y3 - y2));
@@ -272,18 +316,26 @@ Point TriangularUnit::
 }
 
 bool TriangularUnit::
-    operator ==(const TriangularUnit & other){
+    operator ==(const TriangularUnit & other) const {
 
     for (int i = 0; i < 3; i++) {
-        if (!vertexes.contains(other.vertexes.at(i))) {
+        if (!vertexes.contains(other.vertexes[i])) {
             return false;
         }
     }
     return true;
 }
 
-bool TriangularUnit::operator !=(const TriangularUnit &other){
-    return !(this->operator ==(other));
+bool TriangularUnit::
+    operator !=(const TriangularUnit &other) const {
+
+    QVector<Point> otherVertexes = other.getVertexes();
+    for (int i = 0; i < 3; i++) {
+        if (!vertexes.contains(otherVertexes.at(i))) {
+            return true;
+        }
+    }
+    return false;
 }
 
 bool TriangularUnit::
@@ -293,7 +345,7 @@ bool TriangularUnit::
 }
 
 Edge TriangularUnit::
-    getTriangleEdgeThatContainsPoint(Point &point) {
+    getTriangleEdgeThatContainsPoint(const Point &point) {
 
     QSetIterator< Edge > it( edges );
     while (it.hasNext()) {
@@ -307,14 +359,14 @@ Edge TriangularUnit::
     throw std::exception();
 }
 
-QSet<Edge>& TriangularUnit::
-        getEdges() {
+QSet<Edge> TriangularUnit::
+        getEdges() const {
 
     return edges;
 }
 
 Point TriangularUnit::
-    getFrontPointToEdge(Edge& edge) {
+    getFrontPointToEdge(const Edge& edge) {
 
     for (int i = 0; i < vertexes.length(); i++) {
         if (!ExMath::isPointOnLine(vertexes.at(i), edge.getEndPoint(), edge.getStartPoint())) {
@@ -347,6 +399,19 @@ Point& TriangularUnit::
 
     return closestVertex;
 }
+
+void TriangularUnit::
+    appendNeighbor(TriangularUnit& neighbor) {
+
+    neighborTriangulars.insert(neighbor);
+}
+
+void TriangularUnit::
+    removeNeighbor(TriangularUnit& neighbor) {
+
+    neighborTriangulars.remove(neighbor);
+}
+
 
 Edge& TriangularUnit::
     getClosestEdgeToPoint(const Point& point) {

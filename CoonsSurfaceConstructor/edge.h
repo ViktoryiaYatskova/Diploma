@@ -2,6 +2,8 @@
 #define EDGE_H
 
 #include <QSet>
+#include <QString>
+#include "config.h"
 #include "definitions.h"
 
 class Edge {
@@ -26,12 +28,24 @@ public:
     bool operator==(const Edge &other) const;
     bool operator!=(const Edge &other) const;
     bool areConnected(const Edge &other);
+    bool isAdjacentToPoint(const Point& p) const;
     double distantToPoint(Point& p);
     Point getMutualPoint(const Edge &other) const;
+    bool isNull() const;
 };
 
-inline uint qHash (const Point & key){
-    return qHash (key.x () + 0x9e3779b9 + key.y () );
+
+inline qreal roundTillPrecision(qreal n) {
+    return ((int)(n*((int)1./CoonsPatches::PRECISION) + (n >= 0 ? 0.5 : -0.5))) * CoonsPatches::PRECISION;
+}
+
+inline uint qHash (const QVector3D& key){
+    qreal x = roundTillPrecision(key.x());
+    qreal y = roundTillPrecision(key.y());
+    qreal z = roundTillPrecision(key.z());
+
+    QString temp = QString("%0%1%2").arg(x).arg(y).arg(z);
+    return qHash(temp);
 }
 
 inline uint qHash(const Edge& edge) {

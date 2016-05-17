@@ -145,7 +145,7 @@
    <widget class="QPushButton" name="convertToDelaunayTriangular">
     <property name="geometry">
      <rect>
-      <x>90</x>
+      <x>220</x>
       <y>500</y>
       <width>121</width>
       <height>21</height>
@@ -158,20 +158,20 @@
    <widget class="QPushButton" name="pushButton">
     <property name="geometry">
      <rect>
-      <x>0</x>
+      <x>130</x>
       <y>500</y>
       <width>91</width>
       <height>21</height>
      </rect>
     </property>
     <property name="text">
-     <string>Build triangular</string>
+     <string>Simple triangular</string>
     </property>
    </widget>
    <widget class="QPushButton" name="convexHull">
     <property name="geometry">
      <rect>
-      <x>210</x>
+      <x>340</x>
       <y>500</y>
       <width>111</width>
       <height>21</height>
@@ -184,7 +184,7 @@
    <widget class="QPushButton" name="clearButton">
     <property name="geometry">
      <rect>
-      <x>320</x>
+      <x>700</x>
       <y>500</y>
       <width>81</width>
       <height>21</height>
@@ -197,7 +197,7 @@
    <widget class="QPushButton" name="generatePoints">
     <property name="geometry">
      <rect>
-      <x>400</x>
+      <x>0</x>
       <y>500</y>
       <width>101</width>
       <height>21</height>
@@ -289,6 +289,19 @@
     </property>
     <property name="tickInterval">
      <number>15</number>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buildSurfaceButton">
+    <property name="geometry">
+     <rect>
+      <x>450</x>
+      <y>500</y>
+      <width>80</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Surface</string>
     </property>
    </widget>
   </widget>

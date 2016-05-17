@@ -125,11 +125,11 @@ void GrahamTriangulation::appendEdge(Point p1, Point p2){
 }
 
 Point GrahamTriangulation::getMinXPoint() {
-    float minX = 100000;
+    double minX = 100000;
     Point resPoint;
     QList<Point>::iterator i;
     for (i = points.begin(); i != points.end(); ++i) {
-        minX = std::min(i->x(), minX);
+        minX = std::min((double)i->x(), minX);
         if(i->x() == minX) {
             if(!(resPoint.x() < i->x() && resPoint.x() == minX))
                 resPoint = *i;

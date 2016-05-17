@@ -15,7 +15,8 @@ CreateScene::CreateScene(QWidget *parent) :
     MAX_ROTATOR_VALUE(360),
     ROTATOR_STEP(16),
     MAX_WHEEL(8),
-    MIN_WHEEL(-8) {
+    MIN_WHEEL(-8),
+    surface(triangulation) {
 
     setAutoFillBackground(false);
 
@@ -34,6 +35,8 @@ void CreateScene::draw() {
     switch (currentMode) {
 
     case ADD_POINTS:
+        glPointSize(3.0);
+        glColor3f(0.5f, 0.0f, 0.5f);
         drawPoints();
         break;
 
@@ -44,6 +47,11 @@ void CreateScene::draw() {
     case CONVEX_HULL:
         drawTriangular();
         drawConvexHull();
+        break;
+
+    case SURFACE:
+        drawTriangular();
+        drawSurface();
         break;
 
     default:
@@ -63,7 +71,7 @@ void CreateScene::initializeGL(){
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
     glEnable(GL_MULTISAMPLE);
-    //static GLfloat lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
+    //static GLdouble lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
     static GLfloat lightPosition[4] = { MAX_X, MAX_Y, MAX_Z, 1.0 };
     glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
@@ -79,7 +87,6 @@ void CreateScene::initializeGL(){
 void CreateScene::resizeGL(int width, int height){
     setupViewport(width, height);
 }
-
 
 void CreateScene::
     paintGL() {
@@ -108,11 +115,20 @@ void CreateScene::
 void CreateScene::
     drawPoints(QVector<Point>& points) {
 
-    glPointSize(3.0);
+    glBegin(GL_POINTS);
+        QVectorIterator<Point> i(points);
+        while (i.hasNext()) {
+            Point p = i.next();
+            glVertex3f( p.x(), p.y(), p.z());
+        }
+    glEnd();
+}
+
+void CreateScene::
+    drawPoints(QList<Point>& points) {
 
     glBegin(GL_POINTS);
-        glColor3f(0.5f, 0.0f, 0.5f);
-        QVectorIterator<Point> i(points);
+        QListIterator<Point> i(points);
         while (i.hasNext()) {
             Point p = i.next();
             glVertex3f( p.x(), p.y(), p.z());
@@ -240,7 +256,7 @@ void CreateScene::
 
     if (currentMode == ADD_POINTS) {
         if(points.contains(lastPoint)) { return; }
-        points.append(addZCoordinate(toOpenGLPoint(lastPoint)));
+        points.append(CoonsTriangularSurface::setZCoordinate(toOpenGLPoint(lastPoint)));
 
         updateGL();
     }
@@ -261,7 +277,9 @@ void CreateScene::
     updateGL();
 }
 
-Point& CreateScene::toOpenGLPoint(Point& p) {
+Point& CreateScene::
+    toOpenGLPoint(Point& p) {
+
     p.setX(p.x() / (double) width()
                * (MAX_X - MIN_X) + MIN_X);
     p.setY((1 - p.y() / (double) height())
@@ -279,6 +297,37 @@ void CreateScene::
 
     currentMode = TRIANGULAR;
     repaint();
+}
+
+void CreateScene::
+    buildSurface() {
+
+    if (currentMode == TRIANGULAR ||
+        currentMode == CONVEX_HULL ) {
+
+        currentMode = SURFACE;
+        surface.build();
+        repaint();
+    }
+}
+
+void CreateScene::
+    drawSurface() {
+
+    glPushAttrib(GL_ENABLE_BIT);
+
+    glEnable(GL_POINT_SMOOTH);
+
+    glPointSize(3.0);
+
+    glColor3f(0.1f, 0.5f, 0.7f);
+    QVectorIterator<CoonsTriangularSurface> it(surface);
+    while(it.hasNext()) {
+        QList<Point> surfacePoints = it.next().getPoints().values();
+        drawPoints(surfacePoints);
+    }
+
+    glPopAttrib();
 }
 
 void CreateScene::
@@ -310,7 +359,7 @@ void CreateScene::
         Point p;
         p.setX((std::rand() * std::rand() + OFFSET) % (width() - OFFSET));
         p.setY((std::rand() * std::rand() + OFFSET) % (height() - OFFSET));
-        points.append(addZCoordinate(toOpenGLPoint(p)));
+        points.append(CoonsTriangularSurface::setZCoordinate(toOpenGLPoint(p)));
     }
     repaint();
 }
@@ -368,14 +417,6 @@ void CreateScene::
         emit zRotationChanged(angle);
         updateGL();
     }
-}
-
-Point& CreateScene::
-    addZCoordinate(Point& p) {
-
-    double z = p.x() * p.x() + p.y() * p.y();
-    p.setZ(z);
-    return p;
 }
 
 CreateScene::~CreateScene(){}

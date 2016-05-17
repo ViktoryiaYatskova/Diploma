@@ -2,10 +2,10 @@
 #define DEFINITIONS
 
 #include <QPointF>
-#include <QVector3D>
+#include "vector.h"
+#include <QVector>
 
-typedef QVector3D Point;
-typedef QVector3D Vector;
-typedef QVector3D BarycenterPoint;
+typedef Vector Point;
+typedef Vector BarycenterPoint;
 
 #endif // DEFINITIONS

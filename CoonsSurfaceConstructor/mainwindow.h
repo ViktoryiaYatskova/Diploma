@@ -26,6 +26,8 @@ private slots:
 
     void on_generatePoints_clicked();
 
+    void on_buildSurfaceButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };
