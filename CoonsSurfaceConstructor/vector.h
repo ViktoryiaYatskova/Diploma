@@ -16,7 +16,9 @@ public:
 };
 
 inline bool operator==(const Vector &v1, const Vector &v2) {
-    return v1.distanceToPoint(v2) < CoonsPatches::PRECISION;
+    return  std::fabs(v1.x() - v2.x()) < CoonsPatches::PRECISION &&
+            std::fabs(v1.z() - v2.z()) < CoonsPatches::PRECISION &&
+            std::fabs(v1.y() - v2.y()) < CoonsPatches::PRECISION;
 }
 
 #endif // VECTOR_H

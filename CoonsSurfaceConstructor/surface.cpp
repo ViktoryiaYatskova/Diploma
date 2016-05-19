@@ -1,7 +1,8 @@
 #include "surface.h"
+#include "config.h"
 
 Surface::Surface(DelaunayTriangulation& delTriangulation):
-    triangulation(delTriangulation), STEP_NUMBER(100) {
+    triangulation(delTriangulation), STEP_NUMBER(CoonsPatches::STEPS) {
 
     QVectorIterator<TriangularUnit> it(triangulation.getTriangles());
     while(it.hasNext()) {
@@ -23,9 +24,17 @@ void Surface::build(){
         Vector vertexNormal2 = getVertexNormal(vertexes[1]);
         Vector vertexNormal3 = getVertexNormal(vertexes[2]);
         CoonsTriangularSurface trPatch(vertexes, vertexNormal1, vertexNormal2, vertexNormal3, STEP_NUMBER);
-        trPatch.buildHermiteApproximateSurface();
+        trPatch.buildBernesteinApproximateSurface();
+        //trPatch.buildHermiteApproximateSurface();
         append(trPatch);
     }
+}
+
+void Surface::clear(){
+    QVector<CoonsTriangularSurface>::clear();
+    triangulation.clear();
+    vertexNormals.clear();
+    vertexTriangleNeighborhood.clear();
 }
 
 Vector Surface::

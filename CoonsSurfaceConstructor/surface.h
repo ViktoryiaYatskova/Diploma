@@ -18,6 +18,7 @@ public:
     Surface(DelaunayTriangulation&);
 
     void build();
+    void clear();
     Vector getVertexNormal(const Point &vertex);
 };
 

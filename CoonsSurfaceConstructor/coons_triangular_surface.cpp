@@ -11,6 +11,9 @@ CoonsTriangularSurface::
     vertexes(Vs),
     stepNumber(st) {
 
+    points[Point(1, 0, 0)] = vertexes[0];
+    points[Point(0, 1, 0)] = vertexes[1];
+    points[Point(0, 0, 1)] = vertexes[2];
 
     normals.append(N1);
     normals.append(N2);
@@ -99,8 +102,11 @@ void CoonsTriangularSurface::
     double delta = 1.0 / stepNumber;
 
     // define boundary patch points
-    BarycenterPoint opV(1, 0, 0), V;
-    for(int l = 2; l < 5; l++) {
+    for(int l = 0; l < 3; l++, l %= 3) {
+        BarycenterPoint opV, V;
+        int i = l == 0? 1: 0, j = l == 1? 1: 0, k = l == 2? 1: 0;
+        V = BarycenterPoint(i, j, k);
+    /*for(int l = 2; l < 5; l++) {
         V = opV;
         int i = l%3 == 1? 1: 0, j = l%3 == 2? 1: 0, k = l%3 == 0? 1: 0;
         opV = BarycenterPoint(i, j, k);
@@ -118,87 +124,102 @@ void CoonsTriangularSurface::
             BarycenterPoint boundaryPoint = V*x + (1. - x)*opV;
             Point point = s0 * B3[0] + (s0 + lmd.first * T01) * B3[1] +
                           (s1 + lmd.second * T10) * B3[2] + s1 * B3[3];
-            //points[boundaryPoint] = point;
+            points[boundaryPoint] = point;
 
             delete [] B3;
         }
-    }
+    }*/
 
     // define inner points
-    for(double i = delta; i < 1; i += delta) {
-        for(double j = delta; j < 1; j += delta) {
-            BarycenterPoint p = BarycenterPoint(i, j, 1 - j - i);
-            double divCoef = p.x()*p.x() + p.y()*p.y() + p.z()*p.z();
+        for(double i = delta; i < 1; i += delta) {
+            double maxJ = (1.0 - i);
+            double deltaJ = maxJ / stepNumber;
+            for(double j = 0; j < maxJ; j += deltaJ) {
+                BarycenterPoint p(i, j, 1. - j - i);
+                Point sP;
+                double divCoef = p.y()* p.y() * p.z()* p.z()+
+                                 p.x()* p.x() * p.z()* p.z()+
+                                 p.x()* p.x() * p.y()* p.y();
 
-            if (!points[p].isNull()) return;
+                if (!points[p].isNull()) return;
 
-            points[p] = Point();
-            for(int l = 1; l < 4; l++) {
-                V = BarycenterPoint((int)l%3 == 1, (int)l%3 == 2, (int)l%3 == 0);
-                opV = oppositeToVertexPoint(p, V);
-                Point s0 = getSurfacePoint(V),
-                      s1 = getSurfacePoint(opV);
+                for(int l = 0; l < 3; l++) {
+                    l %= 3;
+                    V = BarycenterPoint(l == 0 ? 1: 0, l == 1? 1: 0, l == 2? 1: 0);
+                    // 0 - 2, 2 - 1, 1 - 0
+                    opV = oppositeToVertexPoint(p, V);
+                    Point s0 = getSurfacePoint(V),
+                          s1 = getBoundaryBernesteinApproximatePoint(opV);
 
-                s1 = s1.isNull() ? getBoundaryBernesteinApproximatePoint(opV) : s1;
-                ExMath::consoleLogSurfacePoint(opV, s1);
+                    //ExMath::consoleLogSurfacePoint(opV, s1);
 
-                Vector T01 = tangentInPoint(V, opV);
-                Vector T10 = tangentInPoint(opV, V);
+                    Vector T01 = tangentInPoint(V, opV);
+                    Vector T10 = tangentInPoint(opV, V);
 
-                QPair<double, double> lmd = lambda(s0, s1, T01, T10);
-                double coef = V.x() * p.x()* p.x() + V.y() * p.y()*p.y() + V.z()* p.z()*p.z();
-                double* B3 = ExMath::bernstein(3, 1. - (p*V).length());
+                    QPair<double, double> lmd = lambda(s0, s1, T01, T10);
+                    double coef = V.x() * p.y() * p.y() * p.z() * p.z()+
+                                  V.y() * p.x() * p.x() * p.z() * p.z()+
+                                  V.z() * p.x() * p.x() * p.y() * p.y();
+                    double* B3 = ExMath::bernstein(3, 1 - (p*V).length() );
 
-                points[p] += coef * (s0 * B3[0] + (s0 + lmd.first * T01) * B3[1] +
-                    (s1 + lmd.second * T10) * B3[2] + s1 * B3[3]);
+                    sP += (coef/divCoef) * (s0 * B3[0] + (s0 + lmd.first * T01) * B3[1] +
+                        (s1 + lmd.second * T10) * B3[2] + s1 * B3[3]);
 
-                delete [] B3;
+                    delete [] B3;
+                }
+
+                points[p] = sP;
             }
-
-            points[p] /= divCoef;
         }
     }
 }
 
+
 void CoonsTriangularSurface::
     buildHermiteApproximateSurface() {
 
-    double delta = 1.0 / stepNumber;
+    double deltaI = 1.0 / stepNumber;
+    BarycenterPoint opV, V;
 
     // define inner points
-    for(double i = delta; i < 1; i += delta) {
-        for(double j = delta; j < 1; j += delta) {
-            BarycenterPoint p(i, j, 1 - j - i);
-            double divCoef = p.x()*p.x() + p.y()*p.y() + p.z()*p.z();
+    for(double i = deltaI; i < 1; i += deltaI) {
+        double maxJ = (1.0 - i);
+        double deltaJ = maxJ / stepNumber;
+        for(double j = deltaJ; j < maxJ; j += deltaJ) {
+            BarycenterPoint p(i, j, 1. - j - i);
+            Point sp;
+            double divCoef =  p.y() * p.y() * p.z() * p.z()+
+                              p.x() * p.x() * p.z() * p.z()+
+                              p.x() * p.x() * p.y() * p.y();
 
-            if (!points[p].isNull()) return;
+            //if (!points[p].isNull()) return;
 
-            points[p] = Point();
-            for(int l = 1; l < 4; l++) {
-                V = BarycenterPoint((int)l%3 == 1, (int)l%3 == 2, (int)l%3 == 0);
+            for(int l = 0; l < 3; l++) {
+                l %= 3;
+                V = BarycenterPoint(l == 0 ? 1: 0, l == 1? 1: 0, l == 2? 1: 0);
                 opV = oppositeToVertexPoint(p, V);
                 Point s0 = getSurfacePoint(V),
                       s1 = getSurfacePoint(opV);
 
                 s1 = s1.isNull() ? getBoundaryHermiteApproximatePoint(opV) : s1;
-                ExMath::consoleLogSurfacePoint(opV, s1);
+                //ExMath::consoleLogSurfacePoint(opV, s1);
 
                 Vector T01 = tangentInPoint(V, opV);
                 Vector T10 = tangentInPoint(opV, V);
 
-                double coef = V.x() * p.y()* p.y() * p.z()* p.z()+
-                              V.y() * p.x()* p.x() * p.z()* p.z()+
-                              V.z() * p.x()* p.x() * p.y()* p.y();
+                double coef = V.x() * p.y() * p.y() * p.z() * p.z()+
+                              V.y() * p.x() * p.x() * p.z() * p.z()+
+                              V.z() * p.x() * p.x() * p.y() * p.y();
                 double* H = ExMath::getHermiteCoefficients((p*V).length());
                 double* nH = ExMath::getHermiteCoefficients(1. - (p*V).length());
 
-                points[p] += coef * (s0 * H[0] + T01 * H[1] + T10 * nH[2] + s1 * nH[3]);
+                sp += (coef/divCoef) * (s0 * H[0] + T01 * H[1] + T10 * nH[2] + s1 * nH[3]);
 
                 delete [] H;
                 delete [] nH;
             }
-
-            points[p] /= divCoef;
+            points[p] = sp;
+            //ExMath::consoleLogSurfacePoint(p, sp);
         }
     }
 }
@@ -206,15 +227,17 @@ void CoonsTriangularSurface::
 Point CoonsTriangularSurface::
     getBoundaryBernesteinApproximatePoint(BarycenterPoint& b){
 
-    int i = (b.x() != 0),
-        j = (b.y() != 0 && i == 0),
+    if (!points[b].isNull()) return points[b];
+
+    int i = (b.x() != 0) ? 1: 0,
+        j = (b.y() != 0 && i == 0)? 1: 0,
         k = 0;
 
     BarycenterPoint V(i, j, k);
 
     i = 0,
-    j = (b.y() != 0 && j == 0),
-    k = !j;
+    j = (b.y() != 0 && j == 0)? 1: 0,
+    k = !j? 1: 0;
 
     BarycenterPoint opV(i, j, k);
 
@@ -227,7 +250,7 @@ Point CoonsTriangularSurface::
     QPair<double, double> lmd = lambda(s0, s1, T01, T10);
     Point surfasePoint;
 
-    double x = b.x() || b.y();
+    double x = Vector::dotProduct(b, V);
     double* B3 = ExMath::bernstein(3, x);
     surfasePoint = s0 * B3[0] + (s0 + lmd.first * T01) * B3[1] +
             (s1 + lmd.second * T10) * B3[2] + s1 * B3[3];
@@ -238,17 +261,17 @@ Point CoonsTriangularSurface::
 }
 
 Point CoonsTriangularSurface::
-    getBoundaryHermiteApproximatePoint(BarycenterPoint& b){
+    getBoundaryHermiteApproximatePoint(BarycenterPoint& p){
 
-    int i = (b.x() != 0),
-        j = (b.y() != 0 && i == 0),
+    int i = (p.x() != 0) ? 1: 0,
+        j = (p.y() != 0 && i == 0)? 1: 0,
         k = 0;
 
     BarycenterPoint V(i, j, k);
 
     i = 0,
-    j = (b.y() != 0 && j == 0),
-    k = !j;
+    j = (p.y() != 0 && j == 0)? 1: 0,
+    k = !j? 1: 0;
 
     BarycenterPoint opV(i, j, k);
 
@@ -266,7 +289,7 @@ Point CoonsTriangularSurface::
 
     delete [] H;
     delete [] nH;
-    points[b] = surfasePoint;
+    points[p] = surfasePoint;
     return surfasePoint;
 }
 
@@ -292,37 +315,11 @@ CoonsTriangularSurface &CoonsTriangularSurface::
 Point& CoonsTriangularSurface::
     getSurfacePoint(BarycenterPoint key) {
 
-    /*if (!points[key].isNull()) {
+    if (!points[key].isNull()) {
        return points[key];
-    }*/
-
-    if (key.x() == 1. || key.y() == 1. || key.z() == 1.) {
-        points[key] = barycentricToCartesian(key);
-        return points[key];
     }
 
     return points[key];
-
-    // error! not calced yet
-    // TODO: move calculation here
-    ExMath::consoleLog("Not found!");
-
-    Point closest;
-    double closestDistance;
-
-    QHashIterator<BarycenterPoint, Point> it(points);
-    while(it.hasNext()) {
-        it.next();
-        double distance = ExMath::manhattamDistanse(it.key(), key);
-        if(distance < closestDistance || closest.isNull()) {
-            closestDistance = distance;
-            closest = it.value();
-        }
-    }
-
-    ExMath::consoleLogVector3D(key);
-    ExMath::consoleLogVector3D(closest);
-    return closest;
 }
 
 Vector CoonsTriangularSurface::
@@ -335,8 +332,8 @@ Vector CoonsTriangularSurface::
     tangentInPoint(const BarycenterPoint& bV, const BarycenterPoint& bOpV) {
 
     Vector N = pointNormalVector(bV);
-    Point V = barycentricToCartesian(bV);
-    Point opV = barycentricToCartesian(bOpV);
+    Point V = getSurfacePoint(bV);
+    Point opV = getSurfacePoint(bOpV);
     Vector tangent = -N * (opV - V) * -N;
     return tangent.normalized();
 }

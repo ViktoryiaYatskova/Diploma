@@ -77,7 +77,7 @@ Vector TriangularUnit::
     QVector3D v1 = vertexes[0] - vertexes[1];
     QVector3D v2 = vertexes[1] - vertexes[2];
 
-    return (Vector)QVector3D::normal(v1, v2);
+    return -(Vector)QVector3D::normal(v1, v2);
 }
 
 double TriangularUnit::

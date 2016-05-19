@@ -50,7 +50,7 @@ void CreateScene::draw() {
         break;
 
     case SURFACE:
-        drawTriangular();
+        //drawTriangular();
         drawSurface();
         break;
 
@@ -369,7 +369,7 @@ void CreateScene::clear() {
     yRot = 0;
     zRot = 0;
     points.clear();
-    triangulation.clear();
+    surface.clear();
 
     currentMode = ADD_POINTS;
     repaint();
