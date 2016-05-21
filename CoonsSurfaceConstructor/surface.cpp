@@ -24,8 +24,13 @@ void Surface::build(){
         Vector vertexNormal2 = getVertexNormal(vertexes[1]);
         Vector vertexNormal3 = getVertexNormal(vertexes[2]);
         CoonsTriangularSurface trPatch(vertexes, vertexNormal1, vertexNormal2, vertexNormal3, STEP_NUMBER);
-        trPatch.buildBernesteinApproximateSurface();
-        //trPatch.buildHermiteApproximateSurface();
+
+        if (CoonsPatches::PATCH_TYPE == CoonsPatches::BERNSTEIN) {
+            trPatch.buildBernesteinApproximateSurface();
+        } else if (CoonsPatches::PATCH_TYPE == CoonsPatches::HERMITE) {
+            trPatch.buildHermiteApproximateSurface();
+        }
+
         append(trPatch);
     }
 }
@@ -53,7 +58,7 @@ Vector Surface::
         double a = std::asin(tr.getSinAngleBetweenEdges(vertex));
         normal += a * tr.normalVector();
     }
-    return normal;
+    return normal.normalized();
 }
 
 

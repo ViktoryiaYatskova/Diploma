@@ -1,14 +1,19 @@
 #include "exMath.h"
 #include "bernstein_polynomial.hpp"
+#include "config.h"
 
 void ExMath::consoleLog(const char* error, bool end) {
-    std::cout<<error;
-    if(end) std::cout<<std::endl;
+    if (CoonsPatches::DEBUG_MODE) {
+        std::cout<<error;
+        if(end) std::cout<<std::endl;
+    }
 }
 
 void ExMath::consoleLog(double error, bool end) {
-    std::cout<<error;
-    if(end) std::cout<<std::endl;
+    if (CoonsPatches::DEBUG_MODE) {
+        std::cout<<error;
+        if(end) std::cout<<std::endl;
+    }
 }
 
 ExMath::ExMath() {}

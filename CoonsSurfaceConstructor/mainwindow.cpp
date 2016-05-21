@@ -7,9 +7,9 @@ MainWindow::MainWindow(QWidget *parent) :
     ui(new Ui::MainWindow) {
 
     ui->setupUi(this);
-    //connect(ui->scene, SIGNAL(xRotationChanged(int)), ui->rotXSlider, SLOT(setValue(int)));
-    //connect(ui->scene, SIGNAL(yRotationChanged(int)), ui->rotYSlider, SLOT(setValue(int)));
-    //connect(ui->scene, SIGNAL(zRotationChanged(int)), ui->rotZSlider, SLOT(setValue(int)));
+    connect(ui->scene, SIGNAL(xRotationChanged(int)), ui->rotXSlider, SLOT(setValue(int)));
+    connect(ui->scene, SIGNAL(yRotationChanged(int)), ui->rotYSlider, SLOT(setValue(int)));
+    connect(ui->scene, SIGNAL(zRotationChanged(int)), ui->rotZSlider, SLOT(setValue(int)));
 }
 
 MainWindow::~MainWindow() {

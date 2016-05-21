@@ -52,6 +52,7 @@ void CreateScene::draw() {
     case SURFACE:
         //drawTriangular();
         drawSurface();
+        drawNormals();
         break;
 
     default:
@@ -273,7 +274,6 @@ void CreateScene::
     scaling = std::max(0.0, scaling);
     scaling = std::min(2.0, scaling);
 
-    ExMath::consoleLog(scaling);
     updateGL();
 }
 
@@ -294,6 +294,7 @@ void CreateScene::
 
     triangulation.setPoints(points);
     triangulation.build(false);
+    setCursor(Qt::ArrowCursor);
 
     currentMode = TRIANGULAR;
     repaint();
@@ -316,15 +317,32 @@ void CreateScene::
 
     glPushAttrib(GL_ENABLE_BIT);
 
-    glEnable(GL_POINT_SMOOTH);
+    glEnable(GL_LINE_SMOOTH);
 
-    glPointSize(3.0);
+    glLineWidth(1.1);
 
     glColor3f(0.1f, 0.5f, 0.7f);
     QVectorIterator<CoonsTriangularSurface> it(surface);
     while(it.hasNext()) {
-        QList<Point> surfacePoints = it.next().getPoints().values();
-        drawPoints(surfacePoints);
+        it.next().draw();
+    }
+
+    glPopAttrib();
+}
+
+void CreateScene::
+    drawNormals() {
+
+    glPushAttrib(GL_ENABLE_BIT);
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glLineWidth(2.5);
+
+    glColor3f(0.9f, 0.2f, 0.1f);
+    QVectorIterator<CoonsTriangularSurface> it(surface);
+    while(it.hasNext()) {
+        it.next().drawNormals();
     }
 
     glPopAttrib();
@@ -341,7 +359,7 @@ void CreateScene::
         triangulation.setPoints(points);
         triangulation.build(true);
         currentMode = TRIANGULAR;
-
+        setCursor(Qt::ArrowCursor);
     } else {
         triangulation.convertToDelaunay();
     }
@@ -368,10 +386,16 @@ void CreateScene::clear() {
     xRot = 0;
     yRot = 0;
     zRot = 0;
+    scaling = 1;
     points.clear();
     surface.clear();
 
+    emit xRotationChanged(0);
+    emit yRotationChanged(0);
+    emit zRotationChanged(0);
+
     currentMode = ADD_POINTS;
+    setCursor(Qt::PointingHandCursor);
     repaint();
 }
 
@@ -392,7 +416,7 @@ void CreateScene::
     qNormalizeAngle(angle);
     if (angle != xRot) {
         xRot = angle;
-        emit xRotationChanged(angle);
+        //emit xRotationChanged(angle);
         updateGL();
     }
 }
@@ -403,7 +427,7 @@ void CreateScene::
     qNormalizeAngle(angle);
     if (angle != yRot) {
         yRot = angle;
-        emit yRotationChanged(angle);
+        //emit yRotationChanged(angle);
         updateGL();
     }
 }
@@ -414,7 +438,7 @@ void CreateScene::
     qNormalizeAngle(angle);
     if (angle != zRot) {
         zRot = angle;
-        emit zRotationChanged(angle);
+        //emit zRotationChanged(angle);
         updateGL();
     }
 }

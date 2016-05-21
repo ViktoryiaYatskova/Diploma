@@ -75,9 +75,9 @@ Vector TriangularUnit::
     normalVector() {
 
     QVector3D v1 = vertexes[0] - vertexes[1];
-    QVector3D v2 = vertexes[1] - vertexes[2];
+    QVector3D v2 = vertexes[2] - vertexes[1];
 
-    return -(Vector)QVector3D::normal(v1, v2);
+    return (Vector) QVector3D::normal(v1, v2);
 }
 
 double TriangularUnit::
@@ -98,7 +98,7 @@ double TriangularUnit::
     }
     QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
     QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
-    return std::fabs(QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length());
+    return /*std::fabs*/(QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length());
 }
 
 void TriangularUnit::

@@ -1,6 +1,8 @@
 #ifndef COONSTRIANGULARSURFACE_H
 #define COONSTRIANGULARSURFACE_H
 
+#include <gl/gl.h>
+#include "gl/GLU.h"
 #include <QVector>
 #include <QHash>
 #include "edge.h"
@@ -39,6 +41,8 @@ public:
     Point getBoundaryBernesteinApproximatePoint(BarycenterPoint &b);
     void buildHermiteApproximateSurface();
     Point getBoundaryHermiteApproximatePoint(BarycenterPoint &b);
+    void draw() const;
+    void drawNormals() const;
 };
 
 #endif // COONSTRIANGULARSURFACE_H

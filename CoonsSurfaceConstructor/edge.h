@@ -36,6 +36,7 @@ public:
 
 
 inline qreal roundTillPrecision(qreal n) {
+    //return n;
     qreal key = (int)(n * ((int)1./CoonsPatches::PRECISION) + (n >= 0 ? 0.5 : -0.5));
     key *= CoonsPatches::PRECISION;
     return key;
@@ -46,10 +47,6 @@ inline uint qHash (const QVector3D& key){
     qreal y = roundTillPrecision(key.y());
     qreal z = roundTillPrecision(key.z());
 
-    if ((x > 1 || x < -1 || y > 1 || y < -1 || z > 1 || z < -1) &&
-            x + y + z == 1) {
-        x = 1. + x - 1.;
-    }
     QString temp = QString("%0%1%2").arg(x).arg(y).arg(z);
     return qHash(temp);
 }

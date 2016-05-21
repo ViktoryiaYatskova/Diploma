@@ -39,6 +39,7 @@ public:
     ~CreateScene();
 
     void drawSurface();
+    void drawNormals();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void wheelEvent(QWheelEvent *);
