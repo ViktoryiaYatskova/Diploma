@@ -61,6 +61,7 @@ public:
     void setNeighborTriangulars(const QSet<TriangularUnit> &value);
     Vector normalVector();
     double getSinAngleBetweenEdges(const Point& mutualVertex);
+    double definePlanePointZ(double x, double y);
 };
 
 inline uint qHash(const TriangularUnit& triangle) {

@@ -20,6 +20,7 @@ public:
     void build();
     void clear();
     Vector getVertexNormal(const Point &vertex);
+    void drawTrianglesNormals();
 };
 
 #endif // SURFACE_H

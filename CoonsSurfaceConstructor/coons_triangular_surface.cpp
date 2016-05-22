@@ -225,6 +225,24 @@ void CoonsTriangularSurface::
 }
 
 void CoonsTriangularSurface::
+    drawTangents() const {
+
+    const double NORMAL_LENGTH = 0.5;
+    QHashIterator<QPair<Point, Point>, Vector> it(tangents);
+
+    glBegin(GL_LINES);
+        while (it.hasNext()) {
+            it.next();
+            Point P1 = it.key().first;
+            Point P2 = P1 + it.value()*NORMAL_LENGTH;
+
+            glVertex3f(P1.x(), P1.y(), P1.z());
+            glVertex3f(P2.x(), P2.y(), P2.z());
+        }
+    glEnd();
+}
+
+void CoonsTriangularSurface::
     buildHermiteApproximateSurface() {
 
     double one = 1. + CoonsPatches::PRECISION;
@@ -374,17 +392,22 @@ Point& CoonsTriangularSurface::
 Vector CoonsTriangularSurface::
     pointNormalVector(const BarycenterPoint& p) {
 
-    return p.x() * normals[0] + p.y() * normals[1] + p.z() * normals[2];
+    return (p.x() * normals[0] + p.y() * normals[1] + p.z() * normals[2]).normalized();
 }
 
 Vector CoonsTriangularSurface::
     tangentInPoint(const BarycenterPoint& bV, const BarycenterPoint& bOpV) {
 
-    Vector N = pointNormalVector(bV);
+    Vector N = -pointNormalVector(bV);
     Point V = getSurfacePoint(bV);
     Point opV = getSurfacePoint(bOpV);
-    Vector tangent = N * (opV - V) * N;
-    return tangent.normalized();
+    Vector tangent = Vector::crossProduct(
+                         N,
+                         Vector::crossProduct(opV - V, N).normalized()
+                      );
+    tangent = tangent.normalized();
+    tangents[QPair<Point, Point>(V, opV)] = tangent;
+    return tangent;
 }
 
 QHash<BarycenterPoint, Point> CoonsTriangularSurface::

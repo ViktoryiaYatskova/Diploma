@@ -47,12 +47,19 @@ void CreateScene::draw() {
     case CONVEX_HULL:
         drawTriangular();
         drawConvexHull();
+        drawNormals();
+        drawTangents();
+        drawTrianglesNormals();
         break;
 
     case SURFACE:
         //drawTriangular();
         drawSurface();
-        drawNormals();
+        if (CoonsPatches::SHOW_ADDITIONAL_VECTORS) {
+            drawNormals();
+            drawTangents();
+            drawTrianglesNormals();
+        }
         break;
 
     default:
@@ -209,6 +216,17 @@ void CreateScene::
 }
 
 void CreateScene::
+    drawTrianglesNormals() {
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glLineWidth(1.2);
+    glColor3f(0.1f, 0.8f, 0.1f);
+
+    surface.drawTrianglesNormals();
+}
+
+void CreateScene::
     showConvexHull() {
 
     currentMode = CONVEX_HULL;
@@ -321,7 +339,7 @@ void CreateScene::
 
     glLineWidth(1.1);
 
-    glColor3f(0.1f, 0.5f, 0.7f);
+    glColor3f(0.1f, 0.6f, 0.8f);
     QVectorIterator<CoonsTriangularSurface> it(surface);
     while(it.hasNext()) {
         it.next().draw();
@@ -337,12 +355,30 @@ void CreateScene::
 
     glEnable(GL_LINE_SMOOTH);
 
-    glLineWidth(2.5);
+    glLineWidth(0.9);
 
-    glColor3f(0.9f, 0.2f, 0.1f);
+    glColor3f(0.9f, 0.1f, 0.1f);
     QVectorIterator<CoonsTriangularSurface> it(surface);
     while(it.hasNext()) {
         it.next().drawNormals();
+    }
+
+    glPopAttrib();
+}
+
+void CreateScene::
+    drawTangents() {
+
+    glPushAttrib(GL_ENABLE_BIT);
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glLineWidth(0.9);
+
+    glColor3f(8.f, 0.f, 0.5f);
+    QVectorIterator<CoonsTriangularSurface> it(surface);
+    while(it.hasNext()) {
+        it.next().drawTangents();
     }
 
     glPopAttrib();

@@ -17,6 +17,7 @@ private:
     const int stepNumber;
 
     QHash<BarycenterPoint, Point> points;
+    QHash<QPair<Point, Point>, Vector> tangents;
 
 public:
     CoonsTriangularSurface();
@@ -43,6 +44,14 @@ public:
     Point getBoundaryHermiteApproximatePoint(BarycenterPoint &b);
     void draw() const;
     void drawNormals() const;
+    void drawTangents() const;
 };
+
+inline uint qHash(const QPair<Point, Point>& pVV) {
+    uint seed = 0;
+    seed ^= qHash(pVV.first) + 0x9e3779b9;
+    seed ^= qHash(pVV.second) + 0x9e3779b9;
+    return seed;
+}
 
 #endif // COONSTRIANGULARSURFACE_H

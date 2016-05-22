@@ -46,7 +46,9 @@ QVector<Point> TriangularUnit::getVertexes() const {
     return vertexes;
 }
 
-void TriangularUnit::setVertexes(const QVector<Point> &value) {
+void TriangularUnit::
+    setVertexes(const QVector<Point> &value) {
+
     vertexes = value;
 }
 
@@ -74,10 +76,14 @@ void TriangularUnit::
 Vector TriangularUnit::
     normalVector() {
 
-    QVector3D v1 = vertexes[0] - vertexes[1];
-    QVector3D v2 = vertexes[2] - vertexes[1];
+    Vector v1 = vertexes[0] - vertexes[1];
+    Vector v2 = vertexes[2] - vertexes[1];
+    Vector normal =
+            ExMath::isLeftTurn(vertexes[2], vertexes[1], vertexes[0])?
+                QVector3D::normal(v1, v2):
+                QVector3D::normal(v2, v1);
 
-    return (Vector) QVector3D::normal(v1, v2);
+    return normal;
 }
 
 double TriangularUnit::
@@ -98,7 +104,7 @@ double TriangularUnit::
     }
     QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
     QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
-    return /*std::fabs*/(QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length());
+    return QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length();
 }
 
 void TriangularUnit::
@@ -311,6 +317,7 @@ Point TriangularUnit::
         double y0 = ((x0 - x1)*(y2 + y3 - 2*y1)/(x2 + x3 - 2*x1)) + y1;
         inscribedCircleCenter.setX(x0);
         inscribedCircleCenter.setY(y0);
+        inscribedCircleCenter.setZ(definePlanePointZ(x0, y0));
     }
     return inscribedCircleCenter;
 }
@@ -434,4 +441,25 @@ Edge& TriangularUnit::
     }
 
     return closestEdge;
+}
+
+double TriangularUnit::
+    definePlanePointZ(double x, double y) {
+
+    double x0 = vertexes[0].x();
+    double y0 = vertexes[0].y();
+    double z0 = vertexes[0].z();
+
+    Vector w = (vertexes[0] - vertexes[1]);
+    Vector v = (vertexes[1] - vertexes[2]);
+
+    double w1 = w.x();
+    double w2 = w.y();
+    double w3 = w.z();
+
+    double v1 = v.x();
+    double v2 = v.y();
+    double v3 = v.z();
+
+    return z0 + (1. / (w2*v1 - v2*w1)) * ((x - x0)*(v3*w2 - v2*w3) + (y - y0)*(v1*w3 - w1*v3));
 }

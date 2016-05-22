@@ -40,6 +40,8 @@ public:
 
     void drawSurface();
     void drawNormals();
+    void drawTangents();
+    void drawTrianglesNormals();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void wheelEvent(QWheelEvent *);

@@ -61,5 +61,20 @@ Vector Surface::
     return normal.normalized();
 }
 
+void Surface::drawTrianglesNormals() {
+    QVectorIterator <TriangularUnit> it(triangulation.getTriangles());
+
+    glBegin(GL_LINES);
+        while (it.hasNext()) {
+            TriangularUnit tr = it.next();
+            Point P1 = tr.getInscribedCircleCenter();
+            Point P2 = P1 + tr.normalVector();
+
+            glVertex3f(P1.x(), P1.y(), P1.z());
+            glVertex3f(P2.x(), P2.y(), P2.z());
+        }
+    glEnd();
+}
+
 
 
