@@ -222,7 +222,7 @@ background-color: rgb(1, 1, 1);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>50</y>
+      <y>70</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -256,7 +256,7 @@ background-color: rgb(1, 1, 1);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>210</y>
+      <y>250</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -277,7 +277,7 @@ background-color: rgb(1, 1, 1);</string>
      <string notr="true"/>
     </property>
     <property name="text">
-     <string>Convex Hull</string>
+     <string>Auxiliaries</string>
     </property>
     <property name="flat">
      <bool>false</bool>
@@ -287,7 +287,7 @@ background-color: rgb(1, 1, 1);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>150</y>
+      <y>290</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -433,7 +433,7 @@ background-color: rgb(1, 1, 1);</string>
     <property name="geometry">
      <rect>
       <x>10</x>
-      <y>90</y>
+      <y>150</y>
       <width>101</width>
       <height>31</height>
      </rect>
@@ -455,6 +455,37 @@ background-color: rgb(1, 1, 1);</string>
     </property>
     <property name="text">
      <string>Surface</string>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="buildTriangularNetButton">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>110</y>
+      <width>101</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="font">
+     <font>
+      <family>Shruti</family>
+      <pointsize>11</pointsize>
+     </font>
+    </property>
+    <property name="cursor">
+     <cursorShape>PointingHandCursor</cursorShape>
+    </property>
+    <property name="autoFillBackground">
+     <bool>false</bool>
+    </property>
+    <property name="styleSheet">
+     <string notr="true"/>
+    </property>
+    <property name="text">
+     <string>Triangle net</string>
     </property>
     <property name="flat">
      <bool>false</bool>

@@ -3,13 +3,13 @@
 #include <cstring>
 
 CoonsTriangularSurface::
-    CoonsTriangularSurface():stepNumber(100){}
+    CoonsTriangularSurface():stepLength(0.01){}
 
 CoonsTriangularSurface::
-    CoonsTriangularSurface(QVector<Point>& Vs, Vector& N1, Vector& N2, Vector& N3, const int st):
+    CoonsTriangularSurface(QVector<Point>& Vs, Vector& N1, Vector& N2, Vector& N3, const double st):
 
     vertexes(Vs),
-    stepNumber(st) {
+    stepLength(st) {
 
     points[Point(1., 0., 0.)] = vertexes[0];
     points[Point(0., 1., 0.)] = vertexes[1];
@@ -38,7 +38,7 @@ BarycenterPoint CoonsTriangularSurface::
     } else {
         b2 = ((y - y1) + (y1 - y3) * b3) / (y2 - y1);
     }
-    b1 = 1 - b2 - b3;
+    b1 = 1. - b2 - b3;
 
     barPoint.setX(b1);
     barPoint.setY(b2);
@@ -91,7 +91,7 @@ BarycenterPoint CoonsTriangularSurface::
 Point &CoonsTriangularSurface::
     setZCoordinate(Point& p) {
 
-    double z = - (p.x() * p.x() + p.y() * p.y());
+    double z =  (p.x() * p.x() - p.y() * p.y());
     p.setZ(z);
     return p;
 }
@@ -99,7 +99,7 @@ Point &CoonsTriangularSurface::
 void CoonsTriangularSurface::
     buildBernesteinApproximateSurface() {
 
-    double delta = 1.0 / stepNumber;
+    double delta = stepLength;
     double one = 1. + CoonsPatches::PRECISION;
     BarycenterPoint opV, V;
 
@@ -146,69 +146,6 @@ void CoonsTriangularSurface::
     }
 }
 
-void CoonsTriangularSurface::draw() const {
-    double delta = 1.0 / stepNumber;
-    double one = 1. + CoonsPatches::PRECISION;
-
-    for(double i = 0. ; i <= one; i += delta) {
-        for(double j = 0., k; j <= one - i; j += delta) {
-            k = 1. - j - i;
-
-            BarycenterPoint B(i, j, k), B2;
-            Point P1 = points[B], P2;
-            double i2, j2, k2;
-
-            glBegin(GL_LINES);
-                if (i < 1 && k > 0) {
-                    i2 = i + delta;
-                    j2 = j;
-                    k2 = std::max(0., 1. - i2 - j2);
-                    B2 = BarycenterPoint(i2, j2, k2);
-                    P2 = points[B2];
-
-                    if ( !P2.isNull() ) {
-                        glVertex3f(P1.x(), P1.y(), P1.z());
-                        glVertex3f(P2.x(), P2.y(), P2.z());
-                    } else {
-                        ExMath::consoleLogVector3D(B2);
-                    }
-                }
-
-                if (i > 0 && j < 1) {
-                    i2 = i - delta;
-                    j2 = j + delta;
-                    k2 = std::max(0., 1. - i2 - j2);
-                    B2 = BarycenterPoint(i2, j2, k2);
-                    P2 = points[B2];
-
-                    if (!P2.isNull()) {
-                        glVertex3f(P1.x(), P1.y(), P1.z());
-                        glVertex3f(P2.x(), P2.y(), P2.z());
-                    } else {
-                        ExMath::consoleLogVector3D(B2);
-                    }
-                }
-
-                if (j < 1 && k > 0) {
-                    i2 = i;
-                    j2 = j + delta;
-                    k2 = std::max(0., 1. - i2 - j2);
-                    B2 = BarycenterPoint(i2, j2, k2);
-                    P2 = points[B2];
-
-                    if (!P2.isNull()) {
-                        glVertex3f(P1.x(), P1.y(), P1.z());
-                        glVertex3f(P2.x(), P2.y(), P2.z());
-                    } else {
-                        ExMath::consoleLogVector3D(B2);
-                    }
-                }
-            glEnd();
-        }
-    }
-}
-
-
 void CoonsTriangularSurface::
     drawNormals() const {
 
@@ -246,7 +183,7 @@ void CoonsTriangularSurface::
     buildHermiteApproximateSurface() {
 
     double one = 1. + CoonsPatches::PRECISION;
-    double delta = 1. / stepNumber;
+    double delta = stepLength;
     BarycenterPoint opV, V;
 
     // define inner points
@@ -418,4 +355,128 @@ QHash<BarycenterPoint, Point> CoonsTriangularSurface::
 void CoonsTriangularSurface::
     setPoints(const QHash<BarycenterPoint, Point> &value) {
     points = value;
+}
+
+void CoonsTriangularSurface::
+    drawTriangularNet() const {
+
+    glEnable(GL_LINE_SMOOTH);
+
+    glLineWidth(1.1);
+
+    double delta = stepLength;
+    double one = 1. + CoonsPatches::PRECISION;
+
+    glBegin(GL_LINES);
+
+    for(double i = 0. ; i <= one; i += delta) {
+        for(double j = 0., k; j <= one - i; j += delta) {
+            k = 1. - j - i;
+
+            BarycenterPoint B(i, j, k), B2;
+            Point P1 = points[B], P2;
+            double i2, j2, k2;
+
+                if (i < 1 && k > 0) {
+                    i2 = i + delta;
+                    j2 = j;
+                    k2 = std::max(0., 1. - i2 - j2);
+                    B2 = BarycenterPoint(i2, j2, k2);
+                    P2 = points[B2];
+
+                    if ( !P2.isNull() ) {
+                            glVertex3f(P1.x(), P1.y(), P1.z());
+                            glVertex3f(P2.x(), P2.y(), P2.z());
+                    } else {
+                        ExMath::consoleLogVector3D(B2);
+                    }
+                }
+
+                if (i > 0 && j < 1) {
+                    i2 = i - delta;
+                    j2 = j + delta;
+                    k2 = std::max(0., 1. - i2 - j2);
+                    B2 = BarycenterPoint(i2, j2, k2);
+                    P2 = points[B2];
+
+                    if (!P2.isNull()) {
+                            glVertex3f(P1.x(), P1.y(), P1.z());
+                            glVertex3f(P2.x(), P2.y(), P2.z());
+                    } else {
+                        ExMath::consoleLogVector3D(B2);
+                    }
+                }
+
+                if (j < 1 && k > 0) {
+                    i2 = i;
+                    j2 = j + delta;
+                    k2 = std::max(0., 1. - i2 - j2);
+                    B2 = BarycenterPoint(i2, j2, k2);
+                    P2 = points[B2];
+
+                    if (!P2.isNull()) {
+                            glVertex3f(P1.x(), P1.y(), P1.z());
+                            glVertex3f(P2.x(), P2.y(), P2.z());
+                    } else {
+                        ExMath::consoleLogVector3D(B2);
+                    }
+                }
+        }
+    }
+    glEnd();
+}
+
+void CoonsTriangularSurface::
+    draw() const {
+
+    double delta = stepLength;
+    double one = 1. + CoonsPatches::PRECISION;
+    double i2, j2, k2;
+    double i3, j3, k3;
+    double i4, j4, k4;
+
+    glBegin(GL_TRIANGLES);
+
+    int l = 0;
+    for(double i = 0. ; i + delta <= one; i += delta, l++) {
+        for(double j = 0., k; j + delta <= one - i; j += delta, l++) {
+            k = 1. - j - i;
+
+            BarycenterPoint B1(i, j, k);
+            Point P1 = points[B1];
+
+            i2 = i;
+            j2 = j + delta;
+            k2 = std::max(0., 1. - i2 - j2);
+            BarycenterPoint B2(i2, j2, k2);
+            Point P2 = points[B2];
+
+            i3 = i + delta;
+            j3 = j;
+            k3 = std::max(0., 1. - i3 - j3);
+            BarycenterPoint B3(i3, j3, k3);
+            Point P3 = points[B3];
+
+            glVertex3f(P3.x(), P3.y(), P3.z());
+            glVertex3f(P2.x(), P2.y(), P2.z());
+            glVertex3f(P1.x(), P1.y(), P1.z());
+
+            if (j2 <= one - i3) {
+                i4 = i3;
+                j4 = j2;
+                k4 = std::max(0., 1. - i4 - j4);
+                BarycenterPoint B4(i4, j4, k4);
+                Point P4 = points[B4];
+
+                if (!P4.isNull()) {
+                    glVertex3f(P2.x(), P2.y(), P2.z());
+                    glVertex3f(P3.x(), P3.y(), P3.z());
+                    glVertex3f(P4.x(), P4.y(), P4.z());
+                } else {
+                    qDebug() << B4;
+                }
+            }
+        }
+    }
+    glEnd();
 }

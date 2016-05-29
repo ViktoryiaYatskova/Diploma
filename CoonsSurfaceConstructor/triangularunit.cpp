@@ -110,7 +110,9 @@ double TriangularUnit::
 void TriangularUnit::
     addPoints(const Point p1, const Point p2, const Point p3) {
 
-    int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
+    //int p = ((p1.x() - p2.x()) * (p3.x() - p2.x())) - ((p3.y() - p2.y()) * (p1.y() - p2.y()));
+    bool p = ExMath::isLeftTurn(p1, p2, p3);
+
     if (p > 0) {
         vertexes.append(p1);
         vertexes.append(p2);

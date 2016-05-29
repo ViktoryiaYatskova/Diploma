@@ -42,6 +42,8 @@ public:
     void drawNormals();
     void drawTangents();
     void drawTrianglesNormals();
+    void initLights();
+    void buildTriangularNet();
 protected:
     void mouseReleaseEvent(QMouseEvent*);
     void wheelEvent(QWheelEvent *);
@@ -90,6 +92,8 @@ private:
     int zRot;
 
     double scaling;
+
+    bool showTriangleNet;
 
     Point& toOpenGLPoint(Point &p);
     void qNormalizeAngle(int &angle);

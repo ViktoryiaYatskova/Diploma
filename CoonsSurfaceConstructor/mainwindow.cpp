@@ -39,3 +39,7 @@ void MainWindow::on_generatePoints_clicked(){
 void MainWindow::on_buildSurfaceButton_clicked() {
     ui->scene->buildSurface();
 }
+
+void MainWindow::on_buildTriangularNetButton_clicked() {
+    ui->scene->buildTriangularNet();
+}

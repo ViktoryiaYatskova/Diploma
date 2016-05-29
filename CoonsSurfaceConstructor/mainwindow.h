@@ -28,6 +28,8 @@ private slots:
 
     void on_buildSurfaceButton_clicked();
 
+    void on_buildTriangularNetButton_clicked();
+
 private:
     Ui::MainWindow *ui;
 };

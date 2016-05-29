@@ -5,23 +5,24 @@
 #include "gl/GLU.h"
 #include <QVector>
 #include <QHash>
+#include <QDebug>
 #include "edge.h"
 #include "definitions.h"
 
 class CoonsTriangularSurface {
 
-private:    
+private:
     QVector<Point> vertexes;
     QVector<Vector> normals;
 
-    const int stepNumber;
+    const double stepLength;
 
     QHash<BarycenterPoint, Point> points;
     QHash<QPair<Point, Point>, Vector> tangents;
 
 public:
     CoonsTriangularSurface();
-    CoonsTriangularSurface(QVector<Point>&, Vector&, Vector&, Vector&, const int);
+    CoonsTriangularSurface(QVector<Point>&, Vector&, Vector&, Vector&, const double);
 
     BarycenterPoint cartesianToBarycentric(Point&);
     Point barycentricToCartesian(const BarycenterPoint&);
@@ -45,6 +46,7 @@ public:
     void draw() const;
     void drawNormals() const;
     void drawTangents() const;
+    void drawTriangularNet() const;
 };
 
 inline uint qHash(const QPair<Point, Point>& pVV) {

@@ -27,6 +27,7 @@ CreateScene::CreateScene(QWidget *parent) :
     zRot = 0;
 
     scaling = 1;
+    showTriangleNet = false;
 }
 
 void CreateScene::draw() {
@@ -75,21 +76,33 @@ void CreateScene::initializeGL(){
     qglClearColor(Qt::black);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
+    //glEnable(GL_CULL_FACE);
     glEnable(GL_MULTISAMPLE);
-    //static GLdouble lightPosition[4] = { 0.5, 5.0, 7.0, 1.0 };
-    static GLfloat lightPosition[4] = { MAX_X, MAX_Y, MAX_Z, 1.0 };
-    glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 
-    GLfloat a[] = { 0.1, 0.1, 0.1, 1.0 };
-    glColor4f(1.0, 1.0, 1.0, 1.0);
+    initLights();
+}
 
-    glMaterialfv(GL_FRONT, GL_AMBIENT, a);
-    glEnable(GL_COLOR_MATERIAL); /* WARNING: Ambient and diffuse material latch immediately to the current color. */
-    glColorMaterial(GL_FRONT, GL_DIFFUSE);
-    glColor3f(0.3, 0.5, 0.6);
+void CreateScene::initLights() {
+   GLfloat ambient[] = {0.2, 0.2, 0.2, 1.0};
+   GLfloat position[] = {0.5, 0.5, 1.5, 1.0};
+   GLfloat matDiffuseFront[] = {0.5, 0.5, 0.5, 1.0};
+   GLfloat matDiffuseBack[] = {0.7, 0.7, 0.7, 1.0};
+   GLfloat matSpecular[] = {1.0, 1.0, 1.0, 1.0};
+   GLfloat matShininess[] = {40.0};
+
+   glEnable(GL_COLOR_MATERIAL);
+   glEnable(GL_LIGHTING);
+   glEnable(GL_LIGHT0);
+
+   glLightModeli(GL_LIGHT_MODEL_TWO_SIDE, GL_TRUE);
+
+   glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+   glLightfv(GL_LIGHT0, GL_POSITION, position);
+
+   glMaterialfv(GL_FRONT, GL_DIFFUSE, matDiffuseFront);
+   glMaterialfv(GL_BACK, GL_DIFFUSE, matDiffuseBack);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, matSpecular);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, matShininess);
 }
 
 void CreateScene::resizeGL(int width, int height){
@@ -102,9 +115,6 @@ void CreateScene::
     setupViewport(width(), height());
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    glColorMaterial(GL_FRONT, GL_DIFFUSE);
-    glEnable(GL_COLOR_MATERIAL);
 
     glLoadIdentity();
     //glTranslatef(0.0, 0.0, -10.0);
@@ -324,10 +334,24 @@ void CreateScene::
     if (currentMode == TRIANGULAR ||
         currentMode == CONVEX_HULL ) {
 
+        currentMode = SURFACE;        
+        surface.build();
+    }
+    showTriangleNet = false;
+    repaint();
+}
+
+void CreateScene::
+    buildTriangularNet() {
+
+    if (currentMode == TRIANGULAR ||
+        currentMode == CONVEX_HULL ) {
+
         currentMode = SURFACE;
         surface.build();
-        repaint();
     }
+    showTriangleNet = true;
+    repaint();
 }
 
 void CreateScene::
@@ -335,14 +359,15 @@ void CreateScene::
 
     glPushAttrib(GL_ENABLE_BIT);
 
-    glEnable(GL_LINE_SMOOTH);
-
-    glLineWidth(1.1);
-
     glColor3f(0.1f, 0.6f, 0.8f);
     QVectorIterator<CoonsTriangularSurface> it(surface);
+
     while(it.hasNext()) {
-        it.next().draw();
+        if (showTriangleNet) {
+            it.next().drawTriangularNet();
+        } else {
+            it.next().draw();
+        }
     }
 
     glPopAttrib();

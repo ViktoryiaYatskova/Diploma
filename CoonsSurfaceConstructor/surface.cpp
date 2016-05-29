@@ -2,7 +2,7 @@
 #include "config.h"
 
 Surface::Surface(DelaunayTriangulation& delTriangulation):
-    triangulation(delTriangulation), STEP_NUMBER(CoonsPatches::STEPS) {
+    triangulation(delTriangulation), STEP_LENGTH(CoonsPatches::STEP) {
 
     QVectorIterator<TriangularUnit> it(triangulation.getTriangles());
     while(it.hasNext()) {
@@ -11,7 +11,7 @@ Surface::Surface(DelaunayTriangulation& delTriangulation):
         Vector normal1 = getVertexNormal(triangleVertexes.at(0)),
                normal2 = getVertexNormal(triangleVertexes.at(1)),
                normal3 = getVertexNormal(triangleVertexes.at(2));
-        CoonsTriangularSurface patch(triangleVertexes, normal1, normal2, normal3, STEP_NUMBER);
+        CoonsTriangularSurface patch(triangleVertexes, normal1, normal2, normal3, STEP_LENGTH);
         append(patch);
     }
 }
@@ -23,7 +23,7 @@ void Surface::build(){
         Vector vertexNormal1 = getVertexNormal(vertexes[0]);
         Vector vertexNormal2 = getVertexNormal(vertexes[1]);
         Vector vertexNormal3 = getVertexNormal(vertexes[2]);
-        CoonsTriangularSurface trPatch(vertexes, vertexNormal1, vertexNormal2, vertexNormal3, STEP_NUMBER);
+        CoonsTriangularSurface trPatch(vertexes, vertexNormal1, vertexNormal2, vertexNormal3, STEP_LENGTH);
 
         if (CoonsPatches::PATCH_TYPE == CoonsPatches::BERNSTEIN) {
             trPatch.buildBernesteinApproximateSurface();

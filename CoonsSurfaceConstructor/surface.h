@@ -9,7 +9,7 @@
 class Surface: public QVector<CoonsTriangularSurface> {
 
 private:
-    const int STEP_NUMBER;
+    const double STEP_LENGTH;
     DelaunayTriangulation& triangulation;
     QMap<Point, Vector> vertexNormals;
     QMap<Point, QSet<TriangularUnit> > vertexTriangleNeighborhood;
