@@ -79,7 +79,7 @@ Vector TriangularUnit::
     Vector v1 = vertexes[0] - vertexes[1];
     Vector v2 = vertexes[2] - vertexes[1];
     Vector normal =
-            ExMath::isLeftTurn(vertexes[2], vertexes[1], vertexes[0])?
+            ExMath::isRightTurn(vertexes[2], vertexes[1], vertexes[0])?
                 QVector3D::normal(v1, v2):
                 QVector3D::normal(v2, v1);
 
@@ -105,6 +105,48 @@ double TriangularUnit::
     QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
     QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
     return QVector3D::crossProduct(e1, e2).length() / e1.length() / e2.length();
+}
+
+double TriangularUnit::
+    getSinAngleBetweenEdgesDividedByEdgeLength(const Point &mutualVertex) {
+
+    Edge edge1, edge2;
+    QSetIterator< Edge > it( edges );
+    while (it.hasNext()) {
+        Edge edge = it.next();
+        if (edge.isAdjacentToPoint(mutualVertex)) {
+            if (edge1.isNull()) {
+                edge1 = edge;
+            } else {
+                edge2 = edge;
+                break;
+            }
+        }
+    }
+    QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
+    QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
+    return QVector3D::crossProduct(e1, e2).length() / (e1.length()*e1.length()) / (e1.length()*e1.length());
+}
+
+double TriangularUnit::
+    getSinAngleBetweenEdgesMultipliedByEdgeLength(const Point &mutualVertex) {
+
+    Edge edge1, edge2;
+    QSetIterator< Edge > it( edges );
+    while (it.hasNext()) {
+        Edge edge = it.next();
+        if (edge.isAdjacentToPoint(mutualVertex)) {
+            if (edge1.isNull()) {
+                edge1 = edge;
+            } else {
+                edge2 = edge;
+                break;
+            }
+        }
+    }
+    QVector3D e1 = (QVector3D)edge1.getStartPoint() - (QVector3D)edge1.getEndPoint();
+    QVector3D e2 = (QVector3D)edge2.getStartPoint() - (QVector3D)edge2.getEndPoint();
+    return QVector3D::crossProduct(e1, e2).length();
 }
 
 void TriangularUnit::

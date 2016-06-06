@@ -36,8 +36,8 @@ void CreateScene::draw() {
     switch (currentMode) {
 
     case ADD_POINTS:
-        glPointSize(3.0);
-        glColor3f(0.5f, 0.0f, 0.5f);
+        glPointSize(5.0);
+        glColor3f(1.0f, 1.0f, 1.0f);
         drawPoints();
         break;
 
@@ -73,7 +73,7 @@ void CreateScene::initializeGL(){
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
 
-    qglClearColor(Qt::black);
+    qglClearColor(Qt::white);
     glShadeModel(GL_SMOOTH);
     glEnable(GL_DEPTH_TEST);
     //glEnable(GL_CULL_FACE);
@@ -84,11 +84,11 @@ void CreateScene::initializeGL(){
 
 void CreateScene::initLights() {
    GLfloat ambient[] = {0.2, 0.2, 0.2, 1.0};
-   GLfloat position[] = {0.5, 0.5, 1.5, 1.0};
-   GLfloat matDiffuseFront[] = {0.5, 0.5, 0.5, 1.0};
-   GLfloat matDiffuseBack[] = {0.7, 0.7, 0.7, 1.0};
+   GLfloat position[] = {2.5, 1.0, 1.5, 1.0};
+   GLfloat matDiffuseFront[] = {0.5, 0.5, 0.5, 0.5};
+   GLfloat matDiffuseBack[] = {0.6, 0.6, 0.6, 0.2};
    GLfloat matSpecular[] = {1.0, 1.0, 1.0, 1.0};
-   GLfloat matShininess[] = {40.0};
+   GLfloat matShininess[] = {30.0};
 
    glEnable(GL_COLOR_MATERIAL);
    glEnable(GL_LIGHTING);
@@ -160,7 +160,7 @@ void CreateScene::
     glPushAttrib(GL_ENABLE_BIT);
 
     glEnable(GL_LINE_SMOOTH);
-    glLineWidth(1.0);
+    glLineWidth(1.5);
 
     QSetIterator<Edge> i(edges);
 

@@ -19,8 +19,12 @@ public:
 
     void build();
     void clear();
-    Vector getVertexNormal(const Point &vertex);
+    Vector getVertexNormalMethod1(const Point &vertex);
     void drawTrianglesNormals();
+    Vector getVertexNormalMethod2(const Point &vertex);
+    Vector getVertexNormal(const Point &vertex);
+    Vector getVertexNormalMethod3(const Point &vertex);
+    Vector getVertexNormalMethod4(const Point &vertex);
 };
 
 #endif // SURFACE_H

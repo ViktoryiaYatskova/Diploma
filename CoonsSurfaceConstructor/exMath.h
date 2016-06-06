@@ -45,6 +45,16 @@ public:
     static double manhattamDistanse(const QVector3D &p1, const QVector3D &p2);
     static void consoleLogSurfacePoint(BarycenterPoint &b, Point &p);
     static double* getHermiteCoefficients(double t);
+
+    static double getHyperbolicParaboloidZ(double x, double y);
+    static double getEllipticParaboloidZ(double x, double y);
+    static double getConeZ(double x, double y);
+
+    static Vector getNormalVectorHyperbolicParaboloid(double x, double y);
+    static Vector getNormalVectorEllipticParaboloid(double x, double y);
+    static Vector getNormalVectorCone(double x, double y);
+    static double getCubicZ(double x, double y);
+    static Vector getNormalVectorCubic(double x, double y);
 };
 
 inline bool operator< (const BarycenterPoint& p1, const BarycenterPoint& p2) {

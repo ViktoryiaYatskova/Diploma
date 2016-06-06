@@ -468,6 +468,42 @@ double *ExMath::getHermiteCoefficients(double t) {
     return hermites;
 }
 
+double ExMath::getHyperbolicParaboloidZ(double x, double y){
+    return x*x - y*y;
+}
+
+double ExMath::getEllipticParaboloidZ(double x, double y){
+    return x*x + y*y;
+}
+
+double ExMath::getConeZ(double x, double y) {
+    return sqrt(x*x + y*y);
+}
+
+double ExMath::getCubicZ(double x, double y) {
+    return - x*x*x + 2*x*y + y*y*y;
+}
+
+Vector ExMath::getNormalVectorHyperbolicParaboloid(double x, double y) {
+    Vector normal(2*x - y*y, x*x - 2*y, -1.);
+    return normal.normalized();
+}
+
+Vector ExMath::getNormalVectorEllipticParaboloid(double x, double y){
+    Vector normal(2*x + y*y, x*x + 2*y, -1.);
+    return normal.normalized();
+}
+
+Vector ExMath::getNormalVectorCone(double x, double y){
+    Vector normal(pow(x*x + y*y, 0.5)*x, pow(x*x + y*y, 0.5)*y, -1.);
+    return normal.normalized();
+}
+
+Vector ExMath::getNormalVectorCubic(double x, double y){
+    Vector normal( -3*x*x + 2*y + y*y*y, -x*x*x + 2*x + 3*y*y, -1.);
+    return normal.normalized();
+}
+
 double ExMath::
     manhattamDistanse(const QVector3D& p1, const QVector3D& p2) {
 

@@ -43,7 +43,7 @@ void Surface::clear(){
 }
 
 Vector Surface::
-    getVertexNormal(const Point& vertex) {
+    getVertexNormalMethod1(const Point& vertex) {
 
     Vector normal;
     QSet<TriangularUnit> adjacentTriangulars = vertexTriangleNeighborhood[vertex];
@@ -57,6 +57,89 @@ Vector Surface::
         TriangularUnit tr = it.next();
         double a = std::asin(tr.getSinAngleBetweenEdges(vertex));
         normal += a * tr.normalVector();
+    }
+    return normal.normalized();
+}
+
+Vector Surface::
+    getVertexNormal(const Point& vertex) {
+
+    Vector normal;
+
+    switch(CoonsPatches::NORMAL_METHOD) {
+
+    case CoonsPatches::NORMAL_CALC_METHOD::METHOD1:
+        normal = getVertexNormalMethod1(vertex);
+        break;
+
+    case CoonsPatches::NORMAL_CALC_METHOD::METHOD2:
+        normal = getVertexNormalMethod2(vertex);
+        break;
+
+    case CoonsPatches::NORMAL_CALC_METHOD::METHOD3:
+        normal = getVertexNormalMethod3(vertex);
+        break;
+
+    case CoonsPatches::NORMAL_CALC_METHOD::METHOD4:
+        normal = getVertexNormalMethod4(vertex);
+        break;
+    }
+
+    return normal;
+}
+
+Vector Surface::
+    getVertexNormalMethod2(const Point& vertex) {
+
+    Vector normal;
+    QSet<TriangularUnit> adjacentTriangulars = vertexTriangleNeighborhood[vertex];
+    if (adjacentTriangulars.isEmpty()) {
+        adjacentTriangulars = triangulation.getVertexAdjacentTriangles(vertex);
+        vertexTriangleNeighborhood[vertex] = adjacentTriangulars;
+    }
+
+    QSetIterator <TriangularUnit> it(adjacentTriangulars);
+    while (it.hasNext()) {
+        TriangularUnit tr = it.next();
+        double a = tr.getSinAngleBetweenEdgesDividedByEdgeLength(vertex);
+        normal += a * tr.normalVector();
+    }
+    return normal.normalized();
+}
+
+Vector Surface::
+    getVertexNormalMethod3(const Point& vertex) {
+
+    Vector normal;
+    QSet<TriangularUnit> adjacentTriangulars = vertexTriangleNeighborhood[vertex];
+    if (adjacentTriangulars.isEmpty()) {
+        adjacentTriangulars = triangulation.getVertexAdjacentTriangles(vertex);
+        vertexTriangleNeighborhood[vertex] = adjacentTriangulars;
+    }
+
+    QSetIterator <TriangularUnit> it(adjacentTriangulars);
+    while (it.hasNext()) {
+        TriangularUnit tr = it.next();
+        double a = tr.getSinAngleBetweenEdgesMultipliedByEdgeLength(vertex);
+        normal += a * tr.normalVector();
+    }
+    return normal.normalized();
+}
+
+Vector Surface::
+    getVertexNormalMethod4(const Point& vertex) {
+
+    Vector normal;
+    QSet<TriangularUnit> adjacentTriangulars = vertexTriangleNeighborhood[vertex];
+    if (adjacentTriangulars.isEmpty()) {
+        adjacentTriangulars = triangulation.getVertexAdjacentTriangles(vertex);
+        vertexTriangleNeighborhood[vertex] = adjacentTriangulars;
+    }
+
+    QSetIterator <TriangularUnit> it(adjacentTriangulars);
+    while (it.hasNext()) {
+        TriangularUnit tr = it.next();
+        normal += tr.normalVector();
     }
     return normal.normalized();
 }

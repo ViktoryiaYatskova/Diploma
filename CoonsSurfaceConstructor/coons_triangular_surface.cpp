@@ -91,7 +91,27 @@ BarycenterPoint CoonsTriangularSurface::
 Point &CoonsTriangularSurface::
     setZCoordinate(Point& p) {
 
-    double z =  (p.x() * p.x() - p.y() * p.y());
+    double z;
+
+    switch(CoonsPatches::SURFACE_TYPE) {
+
+    case CoonsPatches::SURFACE_TYPES::HYPERBOLIC_PARABOLOID:
+        z = ExMath::getHyperbolicParaboloidZ(p.x(), p.y());
+        break;
+
+    case CoonsPatches::SURFACE_TYPES::ELLIPTIC_PARABOLOID:
+        z = ExMath::getEllipticParaboloidZ(p.x(), p.y());
+        break;
+
+    case CoonsPatches::SURFACE_TYPES::CONE:
+        z = ExMath::getConeZ(p.x(), p.y());
+        break;
+
+    case CoonsPatches::SURFACE_TYPES::CUBIC:
+        z = ExMath::getCubicZ(p.x(), p.y());
+        break;
+    }
+
     p.setZ(z);
     return p;
 }
@@ -101,6 +121,8 @@ void CoonsTriangularSurface::
 
     double delta = stepLength;
     double one = 1. + CoonsPatches::PRECISION;
+    double error = 0;
+    int count = 0;
     BarycenterPoint opV, V;
 
     // define inner points
@@ -142,23 +164,73 @@ void CoonsTriangularSurface::
             }
 
             points[p] = sP;
+            // Find error!!!!
+            double trueZ = 0;
+            switch(CoonsPatches::SURFACE_TYPE) {
+
+            case CoonsPatches::SURFACE_TYPES::HYPERBOLIC_PARABOLOID:
+                trueZ = ExMath::getHyperbolicParaboloidZ(p.x(), p.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::ELLIPTIC_PARABOLOID:
+                trueZ = ExMath::getEllipticParaboloidZ(p.x(), p.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::CONE:
+                trueZ = ExMath::getConeZ(p.x(), p.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::CUBIC:
+                trueZ = ExMath::getCubicZ(p.x(), p.y());
+                break;
+            }
+            error += std::fabs(sP.z() - trueZ);
+            count++;
         }
     }
+    //qDebug() << error / (double) count;
 }
 
 void CoonsTriangularSurface::
     drawNormals() const {
 
     const double NORMAL_LENGTH = 0.5;
+    double defect = 0;
+    int num = 0;
     glBegin(GL_LINES);
         for (int i = 0; i < 3; i++) {
             Point P1 = vertexes[i];
             Point P2 = normals[i]*NORMAL_LENGTH + P1;
+            Vector realNormal;
+
+            switch(CoonsPatches::SURFACE_TYPE) {
+
+            case CoonsPatches::SURFACE_TYPES::HYPERBOLIC_PARABOLOID:
+                realNormal = ExMath::getNormalVectorHyperbolicParaboloid(P1.x(), P1.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::ELLIPTIC_PARABOLOID:
+                realNormal = ExMath::getNormalVectorEllipticParaboloid(P1.x(), P1.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::CONE:
+                realNormal = ExMath::getNormalVectorCone(P1.x(), P1.y());
+                break;
+
+            case CoonsPatches::SURFACE_TYPES::CUBIC:
+                realNormal = ExMath::getNormalVectorCubic(P1.x(), P1.y());
+                break;
+            }
+
+            defect += (realNormal - normals[i]).length();
+            num++;
 
             glVertex3f(P1.x(), P1.y(), P1.z());
             glVertex3f(P2.x(), P2.y(), P2.z());
         }
     glEnd();
+
+    //qDebug() << defect / (double)num;
 }
 
 void CoonsTriangularSurface::
@@ -400,8 +472,8 @@ void CoonsTriangularSurface::
                     P2 = points[B2];
 
                     if (!P2.isNull()) {
-                            glVertex3f(P1.x(), P1.y(), P1.z());
-                            glVertex3f(P2.x(), P2.y(), P2.z());
+                        glVertex3f(P1.x(), P1.y(), P1.z());
+                        glVertex3f(P2.x(), P2.y(), P2.z());
                     } else {
                         ExMath::consoleLogVector3D(B2);
                     }

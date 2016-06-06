@@ -62,6 +62,8 @@ public:
     Vector normalVector();
     double getSinAngleBetweenEdges(const Point& mutualVertex);
     double definePlanePointZ(double x, double y);
+    double getSinAngleBetweenEdgesDividedByEdgeLength(const Point &mutualVertex);
+    double getSinAngleBetweenEdgesMultipliedByEdgeLength(const Point &mutualVertex);
 };
 
 inline uint qHash(const TriangularUnit& triangle) {
